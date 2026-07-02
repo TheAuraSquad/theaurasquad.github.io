@@ -1,0 +1,2591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#6750A4">
+<title>auraMaps</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Rounded" rel="stylesheet">
+<style>
+:root{
+  --md-primary:#6750A4;
+  --md-on-primary:#FFFFFF;
+  --md-primary-container:#EADDFF;
+  --md-on-primary-container:#21005D;
+  --md-secondary:#625B71;
+  --md-on-secondary:#FFFFFF;
+  --md-secondary-container:#E8DEF8;
+  --md-on-secondary-container:#1D192B;
+  --md-tertiary:#7D5260;
+  --md-tertiary-container:#FFD8E4;
+  --md-on-tertiary-container:#31111D;
+  --md-surface:#FEF7FF;
+  --md-surface-dim:#DED8E1;
+  --md-surface-bright:#FEF7FF;
+  --md-surface-container-lowest:#FFFFFF;
+  --md-surface-container-low:#F7F2FA;
+  --md-surface-container:#F3EDF7;
+  --md-surface-container-high:#ECE6F0;
+  --md-surface-container-highest:#E6E0E9;
+  --md-on-surface:#1D1B20;
+  --md-on-surface-variant:#49454F;
+  --md-outline:#79747E;
+  --md-outline-variant:#CAC4D0;
+  --md-inverse-surface:#322F35;
+  --md-inverse-on-surface:#F5EFF7;
+  --md-inverse-primary:#D0BCFF;
+  --md-error:#B3261E;
+  --md-on-error:#FFFFFF;
+  --md-error-container:#F9DEDC;
+  
+  --md-elevation-1:0 1px 3px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08);
+  --md-elevation-2:0 2px 6px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.1);
+  --md-elevation-3:0 4px 12px rgba(0,0,0,.15), 0 8px 20px rgba(0,0,0,.1);
+  --md-elevation-4:0 8px 20px rgba(0,0,0,.18), 0 12px 28px rgba(0,0,0,.12);
+  
+  --md-shape-xs:8px;
+  --md-shape-sm:12px;
+  --md-shape-md:16px;
+  --md-shape-lg:24px;
+  --md-shape-xl:32px;
+  --md-shape-full:9999px;
+  
+  --md-easing-standard:cubic-bezier(0.2, 0, 0, 1);
+  --md-easing-emphasized:cubic-bezier(0.3, 0, 0, 1);
+  --md-duration-short:180ms;
+  --md-duration-medium:320ms;
+}
+
+[data-theme="dark"]{
+  --md-primary:#D0BCFF;
+  --md-on-primary:#381E72;
+  --md-primary-container:#4F378B;
+  --md-on-primary-container:#EADDFF;
+  --md-secondary:#CCC2DC;
+  --md-on-secondary:#332D41;
+  --md-secondary-container:#4A4458;
+  --md-on-secondary-container:#E8DEF8;
+  --md-tertiary:#EFB8C8;
+  --md-tertiary-container:#633B48;
+  --md-on-tertiary-container:#FFD8E4;
+  --md-surface:#141218;
+  --md-surface-dim:#141218;
+  --md-surface-bright:#3B383E;
+  --md-surface-container-lowest:#0F0D13;
+  --md-surface-container-low:#1D1B20;
+  --md-surface-container:#211F26;
+  --md-surface-container-high:#2B2930;
+  --md-surface-container-highest:#36343B;
+  --md-on-surface:#E6E0E9;
+  --md-on-surface-variant:#CAC4D0;
+  --md-outline:#938F99;
+  --md-outline-variant:#49454F;
+  --md-inverse-surface:#E6E0E9;
+  --md-inverse-on-surface:#322F35;
+  --md-inverse-primary:#6750A4;
+  --md-error:#F2B8B5;
+  --md-on-error:#601410;
+  --md-error-container:#8C1D18;
+  --md-elevation-1:0 1px 3px rgba(0,0,0,.3), 0 2px 6px rgba(0,0,0,.25);
+  --md-elevation-2:0 2px 6px rgba(0,0,0,.35), 0 4px 12px rgba(0,0,0,.3);
+  --md-elevation-3:0 4px 12px rgba(0,0,0,.4), 0 8px 20px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Unbounded',system-ui,sans-serif;background:var(--md-surface);color:var(--md-on-surface);user-select:none;transition:background var(--md-duration-medium) var(--md-easing-standard),color var(--md-duration-medium) var(--md-easing-standard)}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+input,select{font-family:inherit}
+
+#app{position:relative;width:100%;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--md-surface);transition:background var(--md-duration-medium) var(--md-easing-standard)}
+@media(min-width:600px){#app{border-radius:var(--md-shape-xl);height:95vh;box-shadow:var(--md-elevation-4)}}
+
+#map{position:absolute;inset:0;z-index:1}
+.leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.75)!important;backdrop-filter:blur(12px)}
+[data-theme="dark"] .leaflet-control-attribution{background:rgba(30,30,30,.75)!important;color:#ccc!important}
+[data-theme="dark"] .leaflet-control-attribution a{color:var(--md-primary)!important}
+[data-theme="dark"] .leaflet-tile{filter:brightness(.88) contrast(1.08)}
+
+.top-bar{position:absolute;top:0;left:0;right:0;z-index:10;padding:16px;display:flex;gap:12px;align-items:center;pointer-events:none}
+.top-bar > *{pointer-events:auto}
+
+.icon-btn{width:48px;height:48px;border-radius:var(--md-shape-full);background:var(--md-surface-container);box-shadow:var(--md-elevation-1);display:flex;align-items:center;justify-content:center;transition:all var(--md-duration-short) var(--md-easing-standard);position:relative;overflow:hidden;backdrop-filter:blur(8px);flex-shrink:0}
+.icon-btn::before{content:'';position:absolute;inset:0;background:var(--md-on-surface);opacity:0;transition:opacity var(--md-duration-short)}
+.icon-btn:hover::before{opacity:.08}
+.icon-btn:active::before{opacity:.14}
+.icon-btn:active{transform:scale(.92)}
+.icon-btn .material-symbols-rounded{font-size:24px;color:var(--md-on-surface);position:relative;z-index:1}
+
+.search-container{flex:1;position:relative;min-width:0}
+.search-bar{height:56px;background:var(--md-surface-container-high);border-radius:var(--md-shape-full);box-shadow:var(--md-elevation-2);display:flex;align-items:center;padding:0 20px;gap:12px;transition:all var(--md-duration-short) var(--md-easing-standard);backdrop-filter:blur(12px);cursor:pointer}
+.search-bar:hover{background:var(--md-surface-container-highest)}
+.search-bar:focus-within{background:var(--md-surface-container-highest);box-shadow:var(--md-elevation-3)}
+.search-bar .material-symbols-rounded{font-size:24px;color:var(--md-on-surface-variant);flex-shrink:0}
+.search-bar input{flex:1;border:none;outline:none;background:transparent;font-size:16px;color:var(--md-on-surface);font-weight:500;letter-spacing:.5px;min-width:0}
+.search-bar input::placeholder{color:var(--md-on-surface-variant)}
+.search-bar .clear-btn{width:32px;height:32px;border-radius:var(--md-shape-full);display:none;align-items:center;justify-content:center;color:var(--md-on-surface-variant);transition:all var(--md-duration-short);flex-shrink:0}
+.search-bar .clear-btn.visible{display:flex}
+.search-bar .clear-btn:hover{background:rgba(0,0,0,.08)}
+
+.suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--md-surface-container);border-radius:var(--md-shape-lg);box-shadow:var(--md-elevation-3);max-height:320px;overflow-y:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:all var(--md-duration-short) var(--md-easing-standard);z-index:100;backdrop-filter:blur(16px)}
+.suggestions.active{opacity:1;transform:translateY(0);pointer-events:auto}
+.suggestion-item{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;transition:background var(--md-duration-short);border-bottom:1px solid var(--md-outline-variant)}
+.suggestion-item:last-child{border-bottom:none}
+.suggestion-item:hover{background:var(--md-surface-container-high)}
+.suggestion-item:active{background:var(--md-surface-container-highest)}
+.suggestion-item .sugg-icon{width:40px;height:40px;border-radius:var(--md-shape-full);background:var(--md-primary-container);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.suggestion-item .sugg-icon .material-symbols-rounded{font-size:20px;color:var(--md-on-primary-container)}
+.suggestion-item .sugg-text{flex:1;min-width:0}
+.suggestion-item .sugg-title{font-size:14px;font-weight:600;color:var(--md-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.suggestion-item .sugg-sub{font-size:12px;color:var(--md-on-surface-variant);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.suggestion-item .sugg-action{color:var(--md-on-surface-variant);display:flex;align-items:center;flex-shrink:0}
+.suggestions-loader{padding:24px;display:flex;justify-content:center}
+
+/* FULL SCREEN SEARCH */
+.fullscreen-search{position:absolute;inset:0;background:var(--md-surface);z-index:2000;display:none;flex-direction:column;animation:slideIn var(--md-duration-medium) var(--md-easing-standard)}
+.fullscreen-search.active{display:flex}
+@keyframes slideIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.fullscreen-search-header{padding:16px;display:flex;align-items:center;gap:12px;background:var(--md-surface-container);border-bottom:1px solid var(--md-outline-variant)}
+.fullscreen-search-header .search-bar{flex:1;background:var(--md-surface-container-highest);box-shadow:none}
+.fullscreen-search-header .icon-btn{background:var(--md-surface-container)}
+
+.search-filters{padding:12px 16px;display:flex;gap:8px;overflow-x:auto;background:var(--md-surface-container-low);border-bottom:1px solid var(--md-outline-variant)}
+.search-filters::-webkit-scrollbar{display:none}
+.filter-chip{padding:8px 16px;border-radius:var(--md-shape-full);background:var(--md-surface-container);border:1px solid var(--md-outline);font-size:13px;font-weight:600;color:var(--md-on-surface);white-space:nowrap;cursor:pointer;transition:all var(--md-duration-short)}
+.filter-chip.active{background:var(--md-primary);color:var(--md-on-primary);border-color:var(--md-primary)}
+.filter-chip:active{transform:scale(.95)}
+
+.search-results{flex:1;overflow-y:auto;padding:16px}
+.search-section{margin-bottom:24px}
+.search-section-title{font-size:12px;font-weight:700;color:var(--md-on-surface-variant);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding:0 4px}
+.ai-result{background:linear-gradient(135deg,var(--md-primary-container) 0%,var(--md-secondary-container) 100%);border-radius:var(--md-shape-lg);padding:16px;margin-bottom:12px;border-left:4px solid var(--md-primary)}
+.ai-result-title{font-size:15px;font-weight:600;color:var(--md-on-surface);margin-bottom:4px}
+.ai-result-desc{font-size:13px;color:var(--md-on-surface-variant);line-height:1.4}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--md-primary);color:var(--md-on-primary);border-radius:var(--md-shape-full);font-size:11px;font-weight:700;margin-bottom:8px}
+
+.bottom-sheet{position:absolute;bottom:0;left:0;right:0;z-index:20;background:var(--md-surface-container);border-radius:var(--md-shape-xl) var(--md-shape-xl) 0 0;box-shadow:var(--md-elevation-3);transition:transform var(--md-duration-medium) var(--md-easing-standard);padding:0 0 max(16px,env(safe-area-inset-bottom));backdrop-filter:blur(20px)}
+.bottom-sheet.collapsed{transform:translateY(calc(100% - 72px))}
+.sheet-handle{width:32px;height:4px;background:var(--md-on-surface-variant);border-radius:2px;margin:12px auto 8px;opacity:.4}
+
+.nav-bar{display:flex;justify-content:space-around;padding:12px 8px 12px;background:var(--md-surface-container);position:relative;backdrop-filter:blur(12px)}
+.nav-bar::before{content:'';position:absolute;top:0;left:16px;right:16px;height:1px;background:var(--md-outline-variant);opacity:.5}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0;position:relative;color:var(--md-on-surface-variant);transition:color var(--md-duration-short) var(--md-easing-standard)}
+.nav-item .indicator{position:absolute;top:0;left:50%;transform:translateX(-50%);width:56px;height:32px;border-radius:var(--md-shape-full);background:var(--md-secondary-container);transition:all var(--md-duration-medium) var(--md-easing-emphasized);z-index:0;opacity:0}
+.nav-item.active{color:var(--md-on-surface)}
+.nav-item.active .indicator{opacity:1}
+.nav-item .material-symbols-rounded{font-size:24px;transition:all var(--md-duration-medium) var(--md-easing-emphasized);position:relative;z-index:1;font-variation-settings:'FILL' 0}
+.nav-item.active .material-symbols-rounded{font-variation-settings:'FILL' 1;font-weight:600;color:var(--md-on-secondary-container)}
+.nav-item span.label{font-size:12px;font-weight:600;letter-spacing:.5px;position:relative;z-index:1;transition:all var(--md-duration-short)}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.sheet-content{padding:8px 20px 16px;max-height:50vh;overflow-y:auto}
+.sheet-content h2{font-size:32px;font-weight:900;line-height:1.1;margin-bottom:8px;color:var(--md-on-surface);letter-spacing:-1px}
+.sheet-content h3{font-size:12px;font-weight:600;margin:20px 0 12px;color:var(--md-on-surface-variant);text-transform:uppercase;letter-spacing:1.5px}
+
+/* ROUTE SELECTION UI */
+.route-selection{background:var(--md-surface-container);border-radius:var(--md-shape-lg);padding:16px;margin-bottom:12px;border:2px solid var(--md-primary);box-shadow:var(--md-elevation-2)}
+.route-selection-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.route-selection-title{font-size:16px;font-weight:700;color:var(--md-on-surface)}
+.route-selection-close{width:32px;height:32px;border-radius:var(--md-shape-full);background:var(--md-surface-container-high);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--md-duration-short)}
+.route-selection-close:hover{background:var(--md-surface-container-highest)}
+.route-selection-close:active{transform:scale(.9)}
+
+/* PLACE INFO CARD */
+.place-info-card{background:linear-gradient(135deg, var(--md-surface-container-high) 0%, var(--md-surface-container) 100%);border-radius:var(--md-shape-lg);padding:0;margin-bottom:16px;overflow:hidden;box-shadow:var(--md-elevation-2);border:2px solid var(--md-outline-variant);animation:fadeIn 0.3s var(--md-easing-standard)}
+.place-info-image{width:100%;height:180px;object-fit:cover;background:var(--md-surface-container-highest);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.place-info-image img{width:100%;height:100%;object-fit:cover}
+.place-info-image .loader{position:absolute}
+.place-info-image .fallback-icon{font-size:64px;color:var(--md-outline);opacity:.3}
+.place-info-content{padding:16px}
+.place-info-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.place-info-title{font-size:16px;font-weight:700;color:var(--md-on-surface);flex:1}
+.place-info-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--md-primary);color:var(--md-on-primary);border-radius:var(--md-shape-full);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.place-info-description{font-size:13px;color:var(--md-on-surface-variant);line-height:1.6;margin-bottom:12px}
+.place-info-footer{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--md-outline-variant)}
+.place-info-source{font-size:11px;color:var(--md-on-surface-variant);font-weight:600;letter-spacing:.5px}
+.place-info-refresh{
+  width:28px;
+  height:28px;
+  border-radius:var(--md-shape-full);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--md-on-surface-variant);
+  cursor:pointer;
+  transition:all var(--md-duration-short);
+  background:var(--md-surface-container-highest);
+}
+.place-info-refresh:hover{background:var(--md-primary-container);color:var(--md-on-primary-container)}
+.place-info-refresh:active{transform:scale(.9) rotate(180deg)}
+.place-info-refresh .material-symbols-rounded{font-size:18px}
+
+.route-card{background:var(--md-surface-container-high);border-radius:var(--md-shape-lg);padding:16px;margin-bottom:12px;cursor:pointer;transition:all var(--md-duration-short);border:2px solid transparent;position:relative;overflow:hidden;backdrop-filter:blur(8px)}
+.route-card::before{content:'';position:absolute;inset:0;background:var(--md-primary);opacity:0;transition:opacity var(--md-duration-short)}
+.route-card:hover::before{opacity:.06}
+.route-card:active{transform:scale(.96)}
+.route-card.selected{border-color:var(--md-primary);background:var(--md-primary-container)}
+.route-card .route-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:relative;z-index:1}
+.route-card .route-time{font-size:28px;font-weight:700;color:var(--md-primary);letter-spacing:-.5px}
+.route-card .route-dist{font-size:13px;color:var(--md-on-surface-variant);font-weight:600}
+.route-card .route-desc{font-size:13px;color:var(--md-on-surface);opacity:.85;position:relative;z-index:1}
+.route-card .fav-btn{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:var(--md-shape-full);display:flex;align-items:center;justify-content:center;color:var(--md-on-surface-variant);transition:all var(--md-duration-short);z-index:2}
+.route-card .fav-btn:hover{background:rgba(0,0,0,.08)}
+.route-card .fav-btn.active{color:#F9A825}
+.route-card .fav-btn .material-symbols-rounded{font-size:22px;font-variation-settings:'FILL' 0;transition:all var(--md-duration-short)}
+.route-card .fav-btn.active .material-symbols-rounded{font-variation-settings:'FILL' 1}
+
+.md-btn{height:48px;border-radius:var(--md-shape-full);padding:0 24px;font-size:14px;font-weight:600;letter-spacing:.1px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:all var(--md-duration-short) var(--md-easing-standard);position:relative;overflow:hidden}
+.md-btn::before{content:'';position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity var(--md-duration-short)}
+.md-btn:hover::before{opacity:.1}
+.md-btn:active::before{opacity:.16}
+.md-btn:active{transform:scale(.95)}
+.md-btn.filled{background:var(--md-primary);color:var(--md-on-primary);box-shadow:var(--md-elevation-2)}
+.md-btn.filled:hover{box-shadow:var(--md-elevation-3)}
+.md-btn.tonal{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}
+.md-btn.text{color:var(--md-primary);padding:0 12px}
+.md-btn.outlined{border:1px solid var(--md-outline);color:var(--md-primary)}
+.md-btn.full{width:100%}
+.md-btn .material-symbols-rounded{font-size:20px}
+
+.fab{position:absolute;bottom:160px;right:16px;width:56px;height:56px;border-radius:var(--md-shape-lg);background:var(--md-primary-container);color:var(--md-on-primary-container);display:flex;align-items:center;justify-content:center;box-shadow:var(--md-elevation-3);z-index:15;transition:all var(--md-duration-short) var(--md-easing-standard);backdrop-filter:blur(12px)}
+.fab:hover{box-shadow:var(--md-elevation-4)}
+.fab:active{transform:scale(.92)}
+.fab .material-symbols-rounded{font-size:24px;font-variation-settings:'FILL' 1}
+
+.setting-item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--md-outline-variant);transition:border-color var(--md-duration-short)}
+.setting-item:last-child{border-bottom:none}
+.setting-label{flex:1;padding-right:12px}
+.setting-label .title{font-size:15px;font-weight:500;color:var(--md-on-surface);letter-spacing:.1px}
+.setting-label .subtitle{font-size:12px;color:var(--md-on-surface-variant);margin-top:2px;letter-spacing:.2px}
+
+.switch{position:relative;width:52px;height:32px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0;position:absolute}
+.switch .track{position:absolute;inset:0;background:var(--md-surface-container-highest);border:2px solid var(--md-outline);border-radius:16px;transition:all var(--md-duration-short) var(--md-easing-standard)}
+.switch .thumb{position:absolute;top:50%;left:6px;width:16px;height:16px;background:var(--md-outline);border-radius:50%;transform:translateY(-50%);transition:all var(--md-duration-medium) var(--md-easing-emphasized);display:flex;align-items:center;justify-content:center}
+.switch input:checked + .track{background:var(--md-primary);border-color:var(--md-primary)}
+.switch input:checked + .track + .thumb{left:28px;width:24px;height:24px;background:var(--md-on-primary)}
+
+.md-select{width:100%;height:56px;border-radius:var(--md-shape-md);border:1px solid var(--md-outline);padding:16px 40px 16px 16px;background:transparent;font-size:15px;color:var(--md-on-surface);outline:none;transition:all var(--md-duration-short);appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'><path fill='%2379747E' d='M7 10l5 5 5-5z'/></svg>");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+[data-theme="dark"] .md-select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'><path fill='%23CAC4D0' d='M7 10l5 5 5-5z'/></svg>")}
+.md-select:focus{border-color:var(--md-primary);border-width:2px;padding:15px 39px 15px 15px}
+
+.segmented{display:flex;border:1px solid var(--md-outline);border-radius:var(--md-shape-full);overflow:hidden;margin-bottom:12px}
+.segmented button{flex:1;height:40px;background:transparent;color:var(--md-on-surface);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;border-right:1px solid var(--md-outline);transition:all var(--md-duration-short)}
+.segmented button:last-child{border-right:none}
+.segmented button.active{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}
+.segmented button .material-symbols-rounded{font-size:18px;font-variation-settings:'FILL' 0}
+.segmented button.active .material-symbols-rounded{font-variation-settings:'FILL' 1}
+
+.color-options{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.color-swatch{width:44px;height:44px;border-radius:var(--md-shape-full);cursor:pointer;position:relative;transition:transform var(--md-duration-short);border:3px solid transparent;box-shadow:var(--md-elevation-1)}
+.color-swatch:hover{transform:scale(1.1)}
+.color-swatch:active{transform:scale(.94)}
+.color-swatch.selected{border-color:var(--md-on-surface)}
+.color-swatch.selected::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.4);font-size:18px}
+
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity var(--md-duration-short);backdrop-filter:blur(8px)}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal{background:var(--md-surface-container);border-radius:var(--md-shape-xl) var(--md-shape-xl) 0 0;width:100%;max-height:85vh;padding:24px;transform:translateY(100%);transition:transform var(--md-duration-medium) var(--md-easing-emphasized);overflow-y:auto;backdrop-filter:blur(20px)}
+.modal-overlay.active .modal{transform:translateY(0)}
+.modal h2{font-size:28px;font-weight:700;margin-bottom:20px;letter-spacing:-.5px}
+.modal .close-btn{position:absolute;top:16px;right:16px}
+
+.nav-overlay{position:absolute;inset:0;z-index:50;background:var(--md-surface);display:none;flex-direction:column}
+.nav-overlay.active{display:flex;animation:fadeIn var(--md-duration-medium) var(--md-easing-standard)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.nav-top-bar{position:absolute;top:0;left:0;right:0;z-index:60;padding:16px;display:flex;gap:12px;align-items:center;background:linear-gradient(to bottom,var(--md-surface) 0%,transparent 100%);pointer-events:none}
+.nav-top-bar > *{pointer-events:auto}
+
+.nav-search-container{flex:1;position:relative;min-width:0}
+.nav-search-bar{height:48px;background:var(--md-surface-container-high);border-radius:var(--md-shape-full);box-shadow:var(--md-elevation-1);display:flex;align-items:center;padding:0 16px;gap:12px;transition:all var(--md-duration-short);backdrop-filter:blur(12px)}
+.nav-search-bar:focus-within{background:var(--md-surface-container-highest);box-shadow:var(--md-elevation-2)}
+.nav-search-bar .material-symbols-rounded{font-size:20px;color:var(--md-on-surface-variant);flex-shrink:0}
+.nav-search-bar input{flex:1;border:none;outline:none;background:transparent;font-size:14px;color:var(--md-on-surface);min-width:0}
+.nav-search-bar input::placeholder{color:var(--md-on-surface-variant)}
+
+.nav-suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--md-surface-container);border-radius:var(--md-shape-lg);box-shadow:var(--md-elevation-3);max-height:280px;overflow-y:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:all var(--md-duration-short);z-index:100;backdrop-filter:blur(16px)}
+.nav-suggestions.active{opacity:1;transform:translateY(0);pointer-events:auto}
+
+.nav-info-panel{position:absolute;top:80px;left:16px;right:16px;z-index:55;background:var(--md-primary);color:var(--md-on-primary);border-radius:var(--md-shape-lg);padding:16px;box-shadow:var(--md-elevation-2);pointer-events:auto;backdrop-filter:blur(12px)}
+.nav-maneuver{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.nav-maneuver .material-symbols-rounded{font-size:40px;font-variation-settings:'FILL' 1}
+.nav-maneuver .info .distance{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.nav-maneuver .info .street{font-size:14px;opacity:.9;margin-top:2px}
+.nav-stats{display:flex;justify-content:space-between;font-size:12px;opacity:.95;font-weight:600}
+
+.nav-map{flex:1;position:relative;z-index:1}
+
+.nav-map-controls{position:absolute;right:16px;bottom:100px;display:flex;flex-direction:column;gap:12px;z-index:10}
+.nav-map-btn{width:48px;height:48px;border-radius:var(--md-shape-full);background:var(--md-surface-container);box-shadow:var(--md-elevation-2);display:flex;align-items:center;justify-content:center;transition:all var(--md-duration-short);backdrop-filter:blur(12px);flex-shrink:0}
+.nav-map-btn:active{transform:scale(.92)}
+.nav-map-btn .material-symbols-rounded{font-size:24px;color:var(--md-on-surface)}
+
+.nav-bottom{padding:16px;background:var(--md-surface-container);display:flex;gap:12px;pointer-events:auto;backdrop-filter:blur(16px);z-index:10}
+.nav-bottom .md-btn{flex:1}
+
+/* TRAFFIC INDICATOR */
+.traffic-indicator{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--md-shape-full);font-size:12px;font-weight:600;background:var(--md-surface-container-highest);margin-top:8px}
+.traffic-indicator.low{background:#C8E6C9;color:#2E7D32}
+.traffic-indicator.medium{background:#FFF9C4;color:#F57F17}
+.traffic-indicator.high{background:#FFCDD2;color:#C62828}
+.traffic-indicator .material-symbols-rounded{font-size:16px}
+
+.snackbar{position:absolute;bottom:100px;left:16px;right:16px;background:var(--md-inverse-surface);color:var(--md-inverse-on-surface);padding:14px 16px;border-radius:var(--md-shape-md);font-size:14px;box-shadow:var(--md-elevation-3);z-index:2000;opacity:0;transform:translateY(20px);transition:all var(--md-duration-medium) var(--md-easing-emphasized);pointer-events:none;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px)}
+.snackbar.show{opacity:1;transform:translateY(0)}
+.snackbar .material-symbols-rounded{font-size:20px;color:var(--md-inverse-primary)}
+
+.pulse{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--md-primary);opacity:.6;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(3);opacity:0}}
+
+.loader{width:24px;height:24px;border:3px solid var(--md-surface-container-highest);border-top-color:var(--md-primary);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;text-align:center;color:var(--md-on-surface-variant)}
+.empty-state .material-symbols-rounded{font-size:64px;color:var(--md-outline);margin-bottom:12px;font-variation-settings:'FILL' 0}
+.empty-state .title{font-size:16px;font-weight:600;color:var(--md-on-surface);margin-bottom:4px}
+.empty-state .subtitle{font-size:13px}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--md-outline);border-radius:2px}
+::-webkit-scrollbar-track{background:transparent}
+
+.drawer-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:1500;opacity:0;pointer-events:none;transition:opacity var(--md-duration-short);backdrop-filter:blur(8px)}
+.drawer-overlay.active{opacity:1;pointer-events:auto}
+.drawer{position:absolute;top:0;left:0;bottom:0;width:280px;background:var(--md-surface-container);z-index:1501;transform:translateX(-100%);transition:transform var(--md-duration-medium) var(--md-easing-emphasized);overflow-y:auto;padding:16px 0;display:flex;flex-direction:column;backdrop-filter:blur(20px)}
+.drawer-overlay.active .drawer{transform:translateX(0)}
+.drawer-header{padding:16px 20px 24px;border-bottom:1px solid var(--md-outline-variant)}
+.drawer-header h3{font-size:20px;font-weight:700;color:var(--md-on-surface);margin-bottom:4px}
+.drawer-header p{font-size:13px;color:var(--md-on-surface-variant)}
+.drawer-content{flex:1}
+.drawer-item{display:flex;align-items:center;gap:16px;padding:14px 20px;cursor:pointer;transition:background var(--md-duration-short)}
+.drawer-item:hover{background:var(--md-surface-container-high)}
+.drawer-item:active{background:var(--md-surface-container-highest)}
+.drawer-item .material-symbols-rounded{font-size:24px;color:var(--md-on-surface-variant)}
+.drawer-item span{font-size:14px;font-weight:600;color:var(--md-on-surface)}
+
+.social-section{padding:16px 20px 20px;border-top:1px solid var(--md-outline-variant);margin-top:auto}
+.social-title{font-size:11px;font-weight:700;color:var(--md-on-surface-variant);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+.social-links{display:flex;gap:10px;flex-wrap:wrap}
+.social-btn{width:44px;height:44px;border-radius:var(--md-shape-full);display:flex;align-items:center;justify-content:center;transition:all var(--md-duration-short) var(--md-easing-standard);position:relative;overflow:hidden;text-decoration:none}
+.social-btn::before{content:'';position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity var(--md-duration-short)}
+.social-btn:hover::before{opacity:.12}
+.social-btn:active::before{opacity:.2}
+.social-btn:active{transform:scale(.9)}
+.social-btn svg{width:22px;height:22px;position:relative;z-index:1}
+.social-btn.youtube{background:#FFE7E3;color:#FF0000}
+[data-theme="dark"] .social-btn.youtube{background:rgba(255,0,0,.15);color:#FF4444}
+.social-btn.telegram{background:#E3F2FD;color:#26A5E4}
+[data-theme="dark"] .social-btn.telegram{background:rgba(38,165,228,.15);color:#4FB8E8}
+.social-btn.github{background:var(--md-surface-container-high);color:var(--md-on-surface)}
+[data-theme="dark"] .social-btn.github{background:rgba(255,255,255,.08);color:#fff}
+.social-btn.instagram{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);color:white}
+[data-theme="dark"] .social-btn.instagram{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)}
+
+.social-links.centered{justify-content:center}
+.social-links.inline{display:inline-flex;gap:10px;margin-top:16px}
+
+/* Gas Station Styles */
+.gas-station-item{background:var(--md-surface-container-high);border-radius:var(--md-shape-lg);padding:16px;margin-bottom:12px;cursor:pointer;transition:all var(--md-duration-short);border:2px solid transparent}
+.gas-station-item:hover{background:var(--md-surface-container-highest)}
+.gas-station-item:active{transform:scale(.96)}
+.gas-station-item.selected{border-color:var(--md-primary);background:var(--md-primary-container)}
+.gas-station-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.gas-station-name{font-size:15px;font-weight:600;color:var(--md-on-surface)}
+.gas-station-distance{font-size:13px;color:var(--md-on-surface-variant)}
+.fuel-status{display:flex;gap:8px;margin-top:8px}
+.fuel-badge{padding:4px 8px;border-radius:var(--md-shape-xs);font-size:11px;font-weight:600}
+.fuel-badge.available{background:#C8E6C9;color:#2E7D32}
+.fuel-badge.unavailable{background:#FFCDD2;color:#C62828}
+.traffic-badge{padding:4px 8px;border-radius:var(--md-shape-xs);font-size:11px;font-weight:600;margin-top:8px;display:inline-block}
+.traffic-badge.low{background:#C8E6C9;color:#2E7D32}
+.traffic-badge.medium{background:#FFF9C4;color:#F57F17}
+.traffic-badge.high{background:#FFCDD2;color:#C62828}
+</style>
+</head>
+<body data-theme="light">
+<div id="app">
+  <div id="map"></div>
+
+  <!-- FULL SCREEN SEARCH -->
+  <div class="fullscreen-search" id="fullscreenSearch">
+    <div class="fullscreen-search-header">
+      <button class="icon-btn" id="closeFullscreenSearch"><span class="material-symbols-rounded">arrow_back</span></button>
+      <div class="search-container">
+        <div class="search-bar">
+          <span class="material-symbols-rounded">search</span>
+          <input type="text" id="fullscreenSearchInput" placeholder="Поиск мест, улиц, зданий..." autocomplete="off">
+        </div>
+      </div>
+    </div>
+    
+    <div class="search-filters">
+      <button class="filter-chip active" data-filter="all">Везде</button>
+      <button class="filter-chip" data-filter="city" data-city="Новосибирск">Новосибирск</button>
+      <button class="filter-chip" data-filter="nearby">Рядом со мной</button>
+      <button class="filter-chip" data-filter="addresses">Адреса</button>
+      <button class="filter-chip" data-filter="places">Места</button>
+      <button class="filter-chip" data-filter="streets">Улицы</button>
+    </div>
+    
+    <div class="search-results" id="searchResults">
+      <div class="empty-state">
+        <span class="material-symbols-rounded">search</span>
+        <div class="title">Начните поиск</div>
+        <div class="subtitle">Введите название места или адреса</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <button class="icon-btn" id="menuBtn"><span class="material-symbols-rounded">menu</span></button>
+    <div class="search-container">
+      <div class="search-bar" id="openFullscreenSearch">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" placeholder="Поиск..." readonly>
+      </div>
+    </div>
+    <button class="icon-btn" id="locateBtn"><span class="material-symbols-rounded">my_location</span></button>
+  </div>
+
+  <button class="fab" id="fabBtn" title="Быстрые действия">
+    <span class="material-symbols-rounded">add</span>
+  </button>
+
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    
+    <div class="tab-content active" id="tab-home">
+      <div class="sheet-content">
+        <h2 style="font-family:'Unbounded';font-weight:900">Добрый<br>день 👋</h2>
+        <p style="color:var(--md-on-surface-variant);margin-bottom:16px;font-size:14px;letter-spacing:.1px">Куда направимся сегодня?</p>
+        
+        <!-- Route Selection UI (hidden by default) -->
+        <div id="routeSelectionContainer" style="display:none">
+          <div class="route-selection">
+            <div class="route-selection-header">
+              <div class="route-selection-title">Выберите маршрут</div>
+              <div class="route-selection-close" id="cancelRouteSelection">
+                <span class="material-symbols-rounded">close</span>
+              </div>
+            </div>
+            <div id="placeInfoContainer"></div>
+            <div id="routeSelectionList"></div>
+            <button class="md-btn filled full" id="startNavigationBtn" style="margin-top:12px">
+              <span class="material-symbols-rounded">navigation</span>
+              Начать навигацию
+            </button>
+          </div>
+        </div>
+        
+        <h3>Недавние</h3>
+        <div id="recentList"></div>
+        
+        <h3>Быстрые действия</h3>
+        <button class="md-btn tonal full" id="demoRouteBtn" style="margin-bottom:8px">
+          <span class="material-symbols-rounded">route</span>
+          Демо-маршрут
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-favorites">
+      <div class="sheet-content">
+        <h2>Избранное</h2>
+        <div id="favoritesList"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-gas">
+      <div class="sheet-content">
+        <h2>Заправки</h2>
+        <div id="gasStationsList"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-settings">
+      <div class="sheet-content">
+        <h2>Настройки</h2>
+        
+        <h3>Внешний вид</h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Тема оформления</div>
+            <div class="subtitle">Светлая, тёмная или как в системе</div>
+          </div>
+        </div>
+        <div class="segmented" id="themeSegmented">
+          <button data-theme="light"><span class="material-symbols-rounded">light_mode</span>Светлая</button>
+          <button data-theme="dark"><span class="material-symbols-rounded">dark_mode</span>Тёмная</button>
+          <button data-theme="auto"><span class="material-symbols-rounded">brightness_auto</span>Авто</button>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Цвет акцента</div>
+            <div class="subtitle">Основной цвет приложения</div>
+          </div>
+        </div>
+        <div class="color-options" id="colorOptions">
+          <div class="color-swatch selected" data-color="#6750A4" style="background:#6750A4" title="Фиолетовый"></div>
+          <div class="color-swatch" data-color="#006A6A" style="background:#006A6A" title="Бирюзовый"></div>
+          <div class="color-swatch" data-color="#9C4146" style="background:#9C4146" title="Красный"></div>
+          <div class="color-swatch" data-color="#0061A4" style="background:#0061A4" title="Синий"></div>
+          <div class="color-swatch" data-color="#4A5D17" style="background:#4A5D17" title="Зелёный"></div>
+          <div class="color-swatch" data-color="#7C5800" style="background:#7C5800" title="Оранжевый"></div>
+        </div>
+
+        <h3>Навигатор</h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Голосовые подсказки</div>
+            <div class="subtitle">Озвучивать манёвры</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="voiceToggle" checked>
+            <div class="track"></div>
+            <div class="thumb"></div>
+          </label>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Уведомления</div>
+            <div class="subtitle">Показывать манёвры</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifToggle" checked>
+            <div class="track"></div>
+            <div class="thumb"></div>
+          </label>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Авто-масштаб</div>
+            <div class="subtitle">Подстраивать зум под скорость</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="autoZoomToggle" checked>
+            <div class="track"></div>
+            <div class="thumb"></div>
+          </label>
+        </div>
+
+        <h3>Маршрут</h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Тип транспорта</div>
+            <div class="subtitle">Влияет на расчёт маршрута</div>
+          </div>
+        </div>
+        <div class="segmented" id="transportSegmented">
+          <button data-transport="car" class="active"><span class="material-symbols-rounded">directions_car</span>Авто</button>
+          <button data-transport="bike"><span class="material-symbols-rounded">directions_bike</span>Вело</button>
+          <button data-transport="foot"><span class="material-symbols-rounded">directions_walk</span>Пешком</button>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Избегать платных дорог</div>
+            <div class="subtitle">Только бесплатные маршруты</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="avoidTollsToggle">
+            <div class="track"></div>
+            <div class="thumb"></div>
+          </label>
+        </div>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">Единицы измерения</div>
+            <div class="subtitle">Расстояние и скорость</div>
+          </div>
+        </div>
+        <div class="segmented" id="unitsSegmented">
+          <button data-units="km" class="active">км / км/ч</button>
+          <button data-units="mi">миль / mph</button>
+        </div>
+
+        <h3>Провайдер карт</h3>
+        <select class="md-select" id="mapProvider">
+          <option value="osm">OpenStreetMap (бесплатно)</option>
+          <option value="google">Google Maps</option>
+          <option value="yandex">Яндекс.Карты</option>
+        </select>
+
+        <h3>Данные</h3>
+        <button class="md-btn outlined full" id="clearDataBtn" style="margin-bottom:8px">
+          <span class="material-symbols-rounded">delete_sweep</span>
+          Очистить историю
+        </button>
+        <button class="md-btn outlined full" id="exportDataBtn">
+          <span class="material-symbols-rounded">download</span>
+          Экспорт избранного
+        </button>
+
+        <h3>О приложении</h3>
+        <div class="setting-item">
+          <div class="setting-label">
+            <div class="title">auraMaps</div>
+            <div class="subtitle">Версия 1.0 • AI Search Powered</div>
+          </div>
+        </div>
+        
+        <h3>Мы в сети</h3>
+        <div class="social-links centered" id="settingsSocialLinks"></div>
+      </div>
+    </div>
+
+    <div class="nav-bar">
+      <button class="nav-item active" data-tab="home">
+        <div class="indicator"></div>
+        <span class="material-symbols-rounded">home</span>
+        <span class="label">Главная</span>
+      </button>
+      <button class="nav-item" data-tab="favorites">
+        <div class="indicator"></div>
+        <span class="material-symbols-rounded">star</span>
+        <span class="label">Избранное</span>
+      </button>
+      <button class="nav-item" data-tab="gas">
+        <div class="indicator"></div>
+        <span class="material-symbols-rounded">local_gas_station</span>
+        <span class="label">Заправки</span>
+      </button>
+      <button class="nav-item" data-tab="settings">
+        <div class="indicator"></div>
+        <span class="material-symbols-rounded">settings</span>
+        <span class="label">Настройки</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-overlay" id="navOverlay">
+    <div class="nav-top-bar">
+      <button class="icon-btn" id="navMenuBtn"><span class="material-symbols-rounded">menu</span></button>
+      <div class="nav-search-container">
+        <div class="nav-search-bar">
+          <span class="material-symbols-rounded">search</span>
+          <input type="text" id="navSearchInput" placeholder="Поиск..." autocomplete="off">
+        </div>
+        <div class="nav-suggestions" id="navSuggestions"></div>
+      </div>
+      <button class="icon-btn" id="navLocateBtn"><span class="material-symbols-rounded">my_location</span></button>
+    </div>
+
+    <div class="nav-info-panel" id="navInfoPanel" style="display:none">
+      <div class="nav-maneuver">
+        <span class="material-symbols-rounded" id="navIcon">straight</span>
+        <div class="info">
+          <div class="distance" id="navDistance">500 м</div>
+          <div class="street" id="navStreet">Продолжайте движение</div>
+        </div>
+      </div>
+      <div class="nav-stats">
+        <span id="navETA">⏱ 15 мин</span>
+        <span id="navRemaining">📍 8.2 км</span>
+        <span id="navSpeed">🚗 42 км/ч</span>
+      </div>
+    </div>
+
+    <div class="nav-map" id="navMap">
+      <div class="nav-map-controls">
+        <button class="nav-map-btn" id="navZoomIn" title="Приблизить">
+          <span class="material-symbols-rounded">add</span>
+        </button>
+        <button class="nav-map-btn" id="navZoomOut" title="Отдалить">
+          <span class="material-symbols-rounded">remove</span>
+        </button>
+        <button class="nav-map-btn" id="navRecenter" title="Центрировать">
+          <span class="material-symbols-rounded">my_location</span>
+        </button>
+        <button class="nav-map-btn" id="navRouteInfo" title="Инфо о маршруте">
+          <span class="material-symbols-rounded">info</span>
+        </button>
+        <button class="nav-map-btn" id="navLayers" title="Слои карты">
+          <span class="material-symbols-rounded">layers</span>
+        </button>
+      </div>
+    </div>
+    <div class="nav-bottom">
+      <button class="md-btn tonal" id="exitNavBtn">
+        <span class="material-symbols-rounded">close</span>
+        Завершить
+      </button>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawerOverlay">
+    <div class="drawer">
+      <div class="drawer-header">
+        <h3>auraMaps</h3>
+        <p>Навигатор v1.0</p>
+      </div>
+      <div class="drawer-content">
+        <div class="drawer-item" id="drawerHome">
+          <span class="material-symbols-rounded">home</span>
+          <span>Главная</span>
+        </div>
+        <div class="drawer-item" id="drawerFavorites">
+          <span class="material-symbols-rounded">star</span>
+          <span>Избранное</span>
+        </div>
+        <div class="drawer-item" id="drawerGas">
+          <span class="material-symbols-rounded">local_gas_station</span>
+          <span>Заправки</span>
+        </div>
+        <div class="drawer-item" id="drawerSettings">
+          <span class="material-symbols-rounded">settings</span>
+          <span>Настройки</span>
+        </div>
+        <div class="drawer-item" id="drawerAbout">
+          <span class="material-symbols-rounded">info</span>
+          <span>О приложении</span>
+        </div>
+      </div>
+      <div class="social-section">
+        <div class="social-title">The Aura Squad</div>
+        <div class="social-links" id="drawerSocialLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+      <button class="icon-btn close-btn" id="closeModal"><span class="material-symbols-rounded">close</span></button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="snackbar" id="snackbar">
+    <span class="material-symbols-rounded">info</span>
+    <span id="snackbarText">Сообщение</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ============ OPENROUTER AI CONFIG ============
+const OPENROUTER_CONFIG = {
+  apiKey: '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',
+  model: 'nvidia/nemotron-3-70b-instruct',
+  endpoint: 'https://openrouter.ai/api/v1/chat/completions'
+};
+
+// ============ СОЦИАЛЬНЫЕ ССЫЛКИ ============
+const SOCIAL_LINKS = [
+  {
+    name: 'YouTube',
+    url: 'https://youtube.com/@theaurasquaddevs?si=J10UXheRb3bPByFa',
+    className: 'youtube',
+    svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`
+  },
+  {
+    name: 'Telegram',
+    url: 'https://t.me/the_auraSquad',
+    className: 'telegram',
+    svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>`
+  },
+  {
+    name: 'GitHub',
+    url: 'https://github.com/TheAuraSquad',
+    className: 'github',
+    svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>`
+  },
+  {
+    name: 'Instagram',
+    url: 'https://instagram.com/the_aurasquad',
+    className: 'instagram',
+    svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`
+  }
+];
+
+function renderSocialLinks(extraClass = ''){
+  return SOCIAL_LINKS.map(s => `
+    <a href="${s.url}" target="_blank" rel="noopener noreferrer" class="social-btn ${s.className}" title="${s.name}">
+      ${s.svg}
+    </a>
+  `).join('');
+}
+
+const state = {
+  settings: JSON.parse(localStorage.getItem('aura_settings') || 'null') || {
+    provider: 'osm',
+    apiKey: '',
+    color: '#6750A4',
+    theme: 'light',
+    voice: true,
+    notifications: true,
+    autoZoom: true,
+    transport: 'car',
+    avoidTolls: false,
+    units: 'km',
+    city: 'Новосибирск'
+  },
+  map: null,
+  navMap: null,
+  userPos: null,
+  routingControl: null,
+  currentRoute: null,
+  routes: [],
+  isNavigating: false,
+  watchId: null,
+  searchTimeout: null,
+  lastSearchQuery: '',
+  navSearchQuery: '',
+  userMarker: null,
+  navUserMarker: null,
+  currentFilter: 'all',
+  gasStations: [],
+  gasMarkers: [],
+  voiceSynth: window.speechSynthesis,
+  mapMoveTimeout: null,
+  isMapMoving: false,
+  maxReachedIndex: 0,
+  navPolyline: null,
+  destMarker: null,
+  placeInfoCache: new Map()
+};
+
+// ============ ЛОГИКА ФИЛЬТРОВ ============
+let activeFilters = {
+  location: 'all',
+  types: {
+    addresses: true,
+    places: true,
+    streets: true
+  }
+};
+
+function setupFilters(){
+  const filterChips = document.querySelectorAll('.filter-chip');
+  
+  filterChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const filter = chip.dataset.filter;
+      
+      if(['all', 'city', 'nearby'].includes(filter)){
+        if(activeFilters.location === filter){
+          if(activeFilters.location !== 'all'){
+            activeFilters.location = 'all';
+          }
+        } else {
+          activeFilters.location = filter;
+        }
+        updateLocationFilters();
+      }
+      else if(['addresses', 'places', 'streets'].includes(filter)){
+        const enabledTypes = Object.values(activeFilters.types).filter(v => v).length;
+        if(activeFilters.types[filter] && enabledTypes === 1){
+          showSnackbar('Должен быть выбран хотя бы один тип');
+          return;
+        }
+        activeFilters.types[filter] = !activeFilters.types[filter];
+        updateTypeFilters();
+      }
+      
+      const searchInput = document.getElementById('fullscreenSearchInput');
+      if(searchInput && searchInput.value.trim().length >= 2){
+        performSmartSearch(searchInput.value.trim());
+      }
+    });
+  });
+}
+
+function updateLocationFilters(){
+  document.querySelectorAll('.filter-chip[data-filter="all"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.location === 'all');
+  });
+  document.querySelectorAll('.filter-chip[data-filter="city"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.location === 'city');
+  });
+  document.querySelectorAll('.filter-chip[data-filter="nearby"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.location === 'nearby');
+  });
+}
+
+function updateTypeFilters(){
+  document.querySelectorAll('.filter-chip[data-filter="addresses"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.types.addresses);
+  });
+  document.querySelectorAll('.filter-chip[data-filter="places"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.types.places);
+  });
+  document.querySelectorAll('.filter-chip[data-filter="streets"]').forEach(el => {
+    el.classList.toggle('active', activeFilters.types.streets);
+  });
+}
+
+// ============ ЗАПРАВКИ ============
+const MOCK_GAS_STATIONS = [
+  {
+    id: 1,
+    name: 'Лукойл',
+    lat: 55.0415,
+    lon: 82.9346,
+    fuel: {
+      'АИ-92': true,
+      'АИ-95': true,
+      'АИ-98': false,
+      'ДТ': true
+    },
+    traffic: 'low'
+  },
+  {
+    id: 2,
+    name: 'Газпромнефть',
+    lat: 55.0385,
+    lon: 82.9286,
+    fuel: {
+      'АИ-92': true,
+      'АИ-95': true,
+      'АИ-98': true,
+      'ДТ': true
+    },
+    traffic: 'medium'
+  },
+  {
+    id: 3,
+    name: 'Роснефть',
+    lat: 55.0445,
+    lon: 82.9406,
+    fuel: {
+      'АИ-92': false,
+      'АИ-95': true,
+      'АИ-98': false,
+      'ДТ': true
+    },
+    traffic: 'high'
+  },
+  {
+    id: 4,
+    name: 'Татнефть',
+    lat: 55.0365,
+    lon: 82.9326,
+    fuel: {
+      'АИ-92': true,
+      'АИ-95': true,
+      'АИ-98': true,
+      'ДТ': false
+    },
+    traffic: 'low'
+  },
+  {
+    id: 5,
+    name: 'Башнефть',
+    lat: 55.0425,
+    lon: 82.9366,
+    fuel: {
+      'АИ-92': true,
+      'АИ-95': false,
+      'АИ-98': false,
+      'ДТ': true
+    },
+    traffic: 'medium'
+  }
+];
+
+function loadGasStations(){
+  state.gasStations = MOCK_GAS_STATIONS;
+  renderGasStations();
+}
+
+function renderGasStations(){
+  const list = document.getElementById('gasStationsList');
+  
+  if(!state.userPos){
+    list.innerHTML = `
+      <div class="empty-state">
+        <span class="material-symbols-rounded">location_off</span>
+        <div class="title">Местоположение недоступно</div>
+        <div class="subtitle">Разрешите доступ к геолокации</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const stationsWithDistance = state.gasStations.map(station => {
+    const distance = calculateDistance(state.userPos[0], state.userPos[1], station.lat, station.lon);
+    return {...station, distance};
+  }).sort((a, b) => a.distance - b.distance);
+  
+  list.innerHTML = stationsWithDistance.map(station => {
+    const fuelBadges = Object.entries(station.fuel).map(([type, available]) => 
+      `<span class="fuel-badge ${available ? 'available' : 'unavailable'}">${type}: ${available ? '✓' : '✗'}</span>`
+    ).join('');
+    
+    const trafficClass = station.traffic;
+    const trafficText = trafficClass === 'low' ? 'Низкая' : trafficClass === 'medium' ? 'Средняя' : 'Высокая';
+    
+    return `
+      <div class="gas-station-item" data-id="${station.id}">
+        <div class="gas-station-header">
+          <div class="gas-station-name">${station.name}</div>
+          <div class="gas-station-distance">${station.distance.toFixed(1)} км</div>
+        </div>
+        <div class="fuel-status">${fuelBadges}</div>
+        <div class="traffic-badge ${trafficClass}">Пробки: ${trafficText}</div>
+      </div>
+    `;
+  }).join('');
+  
+  list.querySelectorAll('.gas-station-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = parseInt(item.dataset.id);
+      const station = state.gasStations.find(s => s.id === id);
+      if(station){
+        showGasStationRoute(station);
+      }
+    });
+  });
+}
+
+function showGasStationRoute(station){
+  if(!state.userPos){
+    showSnackbar('Сначала определите местоположение');
+    return;
+  }
+  
+  const dest = [station.lat, station.lon];
+  buildRoutes(state.userPos, dest, station.name);
+  
+  if(state.destMarker) state.map.removeLayer(state.destMarker);
+  state.destMarker = L.marker(dest).addTo(state.map).bindPopup(station.name).openPopup();
+  state.map.setView(dest, 15);
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function displayGasStationsOnMap(){
+  state.gasMarkers.forEach(marker => state.map.removeLayer(marker));
+  state.gasMarkers = [];
+  
+  state.gasStations.forEach(station => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#FF9800;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3);font-size:18px">⛽</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+    
+    const marker = L.marker([station.lat, station.lon], {icon}).addTo(state.map);
+    marker.bindPopup(`
+      <div style="font-family:inherit">
+        <div style="font-weight:600;margin-bottom:4px">${station.name}</div>
+        <div style="font-size:12px;color:#666">Топливо: ${Object.entries(station.fuel).filter(([_, v]) => v).map(([k]) => k).join(', ')}</div>
+        <div style="font-size:12px;color:#666">Пробки: ${station.traffic === 'low' ? 'Низкие' : station.traffic === 'medium' ? 'Средние' : 'Высокие'}</div>
+      </div>
+    `);
+    
+    marker.on('click', () => {
+      showGasStationRoute(station);
+    });
+    
+    state.gasMarkers.push(marker);
+  });
+}
+
+function init(){
+  document.getElementById('drawerSocialLinks').innerHTML = renderSocialLinks();
+  document.getElementById('settingsSocialLinks').innerHTML = renderSocialLinks();
+  
+  applyThemeMode(state.settings.theme);
+  applyAccentColor(state.settings.color);
+  applySettings();
+  initMap();
+  setupEvents();
+  setupFullscreenSearch();
+  setupFilters();
+  updateLocationFilters();
+  updateTypeFilters();
+  requestLocation();
+  loadRecents();
+  loadFavorites();
+  loadGasStations();
+  
+  if(state.settings.notifications && 'Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+
+function initMap(){
+  state.map = L.map('map',{zoomControl:false,attributionControl:true,preferCanvas:true}).setView([55.7558,37.6173],13);
+  applyMapProvider();
+  L.control.zoom({position:'bottomright'}).addTo(state.map);
+  
+  state.map.on('movestart', () => {
+    state.isMapMoving = true;
+  });
+  
+  state.map.on('moveend', () => {
+    clearTimeout(state.mapMoveTimeout);
+    state.mapMoveTimeout = setTimeout(() => {
+      state.isMapMoving = false;
+    }, 200);
+  });
+}
+
+function applyMapProvider(){
+  state.map.eachLayer(l=>{if(l instanceof L.TileLayer)state.map.removeLayer(l)});
+  const p = state.settings.provider;
+  let url, attr, maxZoom=19;
+  if(p==='osm'){
+    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    attr='© OpenStreetMap';
+  } else if(p==='google'){
+    url='https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+    attr='© Google';
+  } else if(p==='yandex'){
+    url='https://core-sat.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU';
+    attr='© Яндекс';
+  }
+  L.tileLayer(url,{attribution:attr,maxZoom,updateWhenZooming:false,updateWhenIdle:true}).addTo(state.map);
+}
+
+function applyThemeMode(mode){
+  let theme = mode;
+  if(mode==='auto'){
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.body.setAttribute('data-theme',theme);
+  state.settings.theme = mode;
+  saveSettings();
+  updateThemeSegmented();
+  if(state.map) applyMapProvider();
+  if(state.navMap) applyMapProviderTo(state.navMap);
+}
+
+function updateThemeSegmented(){
+  document.querySelectorAll('#themeSegmented button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.theme===state.settings.theme);
+  });
+}
+
+function applyMapProviderTo(map){
+  map.eachLayer(l=>{if(l instanceof L.TileLayer)map.removeLayer(l)});
+  const p = state.settings.provider;
+  let url,attr;
+  if(p==='osm'){url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';attr='© OSM'}
+  else if(p==='google'){url='https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';attr='© Google'}
+  else{url='https://core-sat.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU';attr='© Яндекс'}
+  L.tileLayer(url,{attribution:attr,maxZoom:19,updateWhenZooming:false,updateWhenIdle:true}).addTo(map);
+}
+
+function requestLocation(){
+  if(!navigator.geolocation){showSnackbar('Геолокация недоступна');return}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    state.userPos = [pos.coords.latitude, pos.coords.longitude];
+    state.map.setView(state.userPos,15);
+    addUserMarker();
+    renderGasStations();
+    displayGasStationsOnMap();
+  },err=>{
+    showSnackbar('Не удалось получить местоположение');
+  },{enableHighAccuracy:true,timeout:10000});
+
+  state.watchId = navigator.geolocation.watchPosition(pos=>{
+    state.userPos = [pos.coords.latitude, pos.coords.longitude];
+    updateUserMarker();
+    if(state.isNavigating){
+      updateNavigation(pos.coords);
+      updateNavUserMarker();
+      trimRoute(pos.coords.latitude, pos.coords.longitude);
+      checkRouteDeviation(pos.coords.latitude, pos.coords.longitude);
+    }
+  },err=>{},{enableHighAccuracy:true,maximumAge:1000,timeout:10000});
+}
+
+function addUserMarker(){
+  if(state.userMarker) state.map.removeLayer(state.userMarker);
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="position:relative;width:20px;height:20px"><div class="pulse"></div><div style="position:absolute;inset:6px;background:var(--md-primary);border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div></div>`,
+    iconSize:[20,20],iconAnchor:[10,10]
+  });
+  state.userMarker = L.marker(state.userPos,{icon}).addTo(state.map);
+}
+
+function updateUserMarker(){
+  if(state.userMarker && state.userPos){
+    state.userMarker.setLatLng(state.userPos);
+  }
+}
+
+// FIX: Плавное panTo без тряски карты
+function updateNavUserMarker(){
+  if(state.navUserMarker && state.userPos){
+    state.navUserMarker.setLatLng(state.userPos);
+    if(state.navMap){
+      const currentCenter = state.navMap.getCenter();
+      const dist = calculateDistance(currentCenter.lat, currentCenter.lng, state.userPos[0], state.userPos[1]);
+      if(dist > 0.03){
+        state.navMap.panTo(state.userPos, {animate: true, duration: 0.5});
+      }
+    }
+  }
+}
+
+function speak(text){
+  if(!state.settings.voice || !state.voiceSynth) return;
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ru-RU';
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  state.voiceSynth.speak(utterance);
+}
+
+function announceNavigation(text){
+  speak(text);
+  if(state.settings.notifications && 'Notification' in window && Notification.permission==='granted'){
+    new Notification('auraMaps',{body:text,icon:'🗺️'});
+  }
+}
+
+function setupFullscreenSearch(){
+  const openBtn = document.getElementById('openFullscreenSearch');
+  const closeBtn = document.getElementById('closeFullscreenSearch');
+  const fullscreenSearch = document.getElementById('fullscreenSearch');
+  const searchInput = document.getElementById('fullscreenSearchInput');
+  const resultsContainer = document.getElementById('searchResults');
+  
+  openBtn.addEventListener('click',()=>{
+    fullscreenSearch.classList.add('active');
+    setTimeout(()=>searchInput.focus(),300);
+  });
+  
+  closeBtn.addEventListener('click',()=>{
+    fullscreenSearch.classList.remove('active');
+    searchInput.value='';
+    resultsContainer.innerHTML = `
+      <div class="empty-state">
+        <span class="material-symbols-rounded">search</span>
+        <div class="title">Начните поиск</div>
+        <div class="subtitle">Введите название места или адреса</div>
+      </div>
+    `;
+  });
+  
+  // FIX: Event delegation для результатов поиска - безопасно для кавычек в именах
+  resultsContainer.addEventListener('click', e => {
+    const item = e.target.closest('[data-search-result]');
+    if(item){
+      const lat = parseFloat(item.dataset.lat);
+      const lon = parseFloat(item.dataset.lon);
+      const name = item.dataset.name;
+      const isAI = item.dataset.ai === 'true';
+      if(isAI){
+        selectAISearchResult(lat, lon, name);
+      } else {
+        selectSuggestion(lat, lon, name);
+      }
+    }
+  });
+  
+  searchInput.addEventListener('input',e=>{
+    const query = e.target.value.trim();
+    if(query.length>=2){
+      clearTimeout(state.searchTimeout);
+      state.searchTimeout = setTimeout(()=>performSmartSearch(query),400);
+    } else if(query.length===0){
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded">search</span>
+          <div class="title">Начните поиск</div>
+          <div class="subtitle">Введите название места или адреса</div>
+        </div>
+      `;
+    }
+  });
+  
+  searchInput.addEventListener('keypress',e=>{
+    if(e.key==='Enter'){
+      const query = searchInput.value.trim();
+      if(query){
+        performSmartSearch(query);
+      }
+    }
+  });
+}
+
+async function performSmartSearch(query){
+  const resultsContainer = document.getElementById('searchResults');
+  resultsContainer.innerHTML = '<div class="suggestions-loader"><div class="loader"></div></div>';
+  
+  try{
+    const searchPromises = [];
+    
+    if(activeFilters.types.addresses || activeFilters.types.places || activeFilters.types.streets){
+      searchPromises.push(searchWithNominatim(query));
+    }
+    
+    if(activeFilters.types.addresses || activeFilters.types.places || activeFilters.types.streets){
+      searchPromises.push(searchWithAI(query));
+    }
+    
+    if(searchPromises.length === 0){
+      resultsContainer.innerHTML = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded">filter_alt_off</span>
+          <div class="title">Фильтры отключены</div>
+          <div class="subtitle">Включите хотя бы один тип поиска</div>
+        </div>
+      `;
+      return;
+    }
+    
+    const results = await Promise.all(searchPromises);
+    const nominatimResults = results.flat();
+    
+    let html = '';
+    
+    if(activeFilters.types.places && results[1] && results[1].length > 0){
+      html += '<div class="search-section"><div class="search-section-title">🤖 AI Рекомендации</div>';
+      results[1].forEach(result => {
+        const safeName = escapeHtml(result.name).replace(/"/g, '&quot;');
+        const safeDesc = escapeHtml(result.description || '');
+        html += `
+          <div class="ai-result" data-search-result data-ai="true" data-lat="${result.lat}" data-lon="${result.lon}" data-name="${safeName}">
+            <div class="ai-badge">
+              <span class="material-symbols-rounded" style="font-size:14px">auto_awesome</span>
+              AI Found
+            </div>
+            <div class="ai-result-title">${safeName}</div>
+            <div class="ai-result-desc">${safeDesc}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+    }
+    
+    if(nominatimResults && nominatimResults.length > 0){
+      const filteredResults = nominatimResults.filter(item => {
+        const type = getPlaceType(item);
+        if(activeFilters.types.addresses && (type.icon === 'home' || type.icon === 'business')) return true;
+        if(activeFilters.types.places && (type.icon === 'location_city' || type.icon === 'place')) return true;
+        if(activeFilters.types.streets && type.icon === 'route') return true;
+        return false;
+      });
+      
+      if(filteredResults.length > 0){
+        html += '<div class="search-section"><div class="search-section-title">📍 Найдено на карте</div>';
+        filteredResults.slice(0, 10).forEach(item => {
+          const type = getPlaceType(item);
+          const title = item.display_name.split(',')[0];
+          const subtitle = item.display_name.split(',').slice(1,3).join(',').trim();
+          const safeName = escapeHtml(item.display_name).replace(/"/g, '&quot;');
+          html += `
+            <div class="suggestion-item" data-search-result data-lat="${item.lat}" data-lon="${item.lon}" data-name="${safeName}">
+              <div class="sugg-icon">
+                <span class="material-symbols-rounded">${type.icon}</span>
+              </div>
+              <div class="sugg-text">
+                <div class="sugg-title">${escapeHtml(title)}</div>
+                <div class="sugg-sub">${escapeHtml(subtitle)}</div>
+              </div>
+              <div class="sugg-action">
+                <span class="material-symbols-rounded">chevron_right</span>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+      }
+    }
+    
+    if(!html){
+      html = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded">search_off</span>
+          <div class="title">Ничего не найдено</div>
+          <div class="subtitle">Попробуйте другой запрос или фильтры</div>
+        </div>
+      `;
+    }
+    
+    resultsContainer.innerHTML = html;
+  } catch(e){
+    console.error('Search error:', e);
+    resultsContainer.innerHTML = `
+      <div class="empty-state">
+        <span class="material-symbols-rounded">error</span>
+        <div class="title">Ошибка поиска</div>
+        <div class="subtitle">Попробуйте позже</div>
+      </div>
+    `;
+  }
+}
+
+async function searchWithAI(query){
+  try{
+    const city = state.settings.city || 'Новосибирск';
+    const filter = activeFilters.location;
+    
+    let locationContext = '';
+    if(filter === 'city'){
+      locationContext = `в городе ${city}`;
+    } else if(filter === 'nearby' && state.userPos){
+      locationContext = `рядом с координатами ${state.userPos[0]},${state.userPos[1]}`;
+    }
+    
+    const prompt = `Ты помощник по поиску мест и адресов. Пользователь ищет: "${query}" ${locationContext}.
+    
+Найди конкретные места, улицы, здания или адреса. Верни ТОЛЬКО JSON массив в формате:
+[{"name":"Название","lat":55.123,"lon":82.456,"description":"Краткое описание"}]
+
+Если ничего не найдено, верни пустой массив [].
+Ищи точно, без выдумок. Координаты должны быть реальными.`;
+
+    const response = await fetch(OPENROUTER_CONFIG.endpoint,{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${OPENROUTER_CONFIG.apiKey}`,
+        'Content-Type':'application/json',
+        'HTTP-Referer':window.location.href,
+        'X-Title':'auraMaps'
+      },
+      body:JSON.stringify({
+        model:OPENROUTER_CONFIG.model,
+        messages:[
+          {role:'system',content:'Ты географический помощник. Отвечай ТОЛЬКО JSON без пояснений.'},
+          {role:'user',content:prompt}
+        ],
+        temperature:0.3,
+        max_tokens:500
+      })
+    });
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content||'[]';
+    
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if(jsonMatch){
+      const results = JSON.parse(jsonMatch[0]);
+      return Array.isArray(results)?results:[];
+    }
+    return [];
+  }catch(e){
+    console.error('AI search error:',e);
+    return [];
+  }
+}
+
+async function searchWithNominatim(query){
+  try{
+    const params = new URLSearchParams({
+      format:'json',
+      q:query,
+      limit:15,
+      addressdetails:1,
+      'accept-language':'ru',
+      countrycodes:'ru,by,ua,kz'
+    });
+    
+    if(activeFilters.location === 'city'){
+      params.append('viewbox','82.5,54.5,83.5,55.5');
+      params.append('bounded','1');
+    }
+    
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
+    return await r.json();
+  }catch(e){
+    console.error('Nominatim search error:',e);
+    return [];
+  }
+}
+
+function selectAISearchResult(lat,lon,name){
+  document.getElementById('fullscreenSearch').classList.remove('active');
+  state.map.setView([lat,lon],16);
+  if(state.destMarker) state.map.removeLayer(state.destMarker);
+  state.destMarker = L.marker([lat,lon]).addTo(state.map).bindPopup(name).openPopup();
+  if(state.userPos) buildRoutes(state.userPos,[lat,lon],name);
+  addRecent(name,[lat,lon]);
+}
+
+function selectSuggestion(lat,lon,name){
+  document.getElementById('fullscreenSearch').classList.remove('active');
+  state.map.setView([lat,lon],15);
+  if(state.destMarker) state.map.removeLayer(state.destMarker);
+  state.destMarker = L.marker([lat,lon]).addTo(state.map).bindPopup(name).openPopup();
+  if(state.userPos) buildRoutes(state.userPos,[lat,lon],name);
+  addRecent(name,[lat,lon]);
+}
+
+function getPlaceType(item){
+  const t = item.type;
+  const cls = item.class;
+  if(cls==='boundary' && t==='administrative') return {icon:'location_city'};
+  if(cls==='highway') return {icon:'route'};
+  if(cls==='building') return {icon:'business'};
+  if(cls==='place' && (t==='city'||t==='town'||t==='village')) return {icon:'location_city'};
+  if(t==='house' || t==='residential') return {icon:'home'};
+  return {icon:'place'};
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function getAIRoute(from, to, baseRoute){
+  try{
+    const prompt = `Ты ИИ-навигатор. Пользователь едет из точки с координатами ${from[0]}, ${from[1]} в точку ${to[0]}, ${to[1]}. 
+Базовый маршрут занимает ${baseRoute.duration} мин и ${baseRoute.distance} км.
+Предложи умную альтернативу (например, "Через дворы без пробок", "Живописный маршрут", "Оптимальный по расходу топлива").
+Верни ТОЛЬКО JSON: {"description":"Краткое описание (до 30 символов)","timeModifier": число от 0.8 до 1.2, "distModifier": число от 0.9 до 1.1}`;
+
+    const response = await fetch(OPENROUTER_CONFIG.endpoint,{
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${OPENROUTER_CONFIG.apiKey}`,
+        'Content-Type':'application/json',
+        'HTTP-Referer':window.location.href,
+        'X-Title':'auraMaps'
+      },
+      body:JSON.stringify({
+        model:OPENROUTER_CONFIG.model,
+        messages:[
+          {role:'system',content:'Ты навигационный ИИ. Отвечай ТОЛЬКО JSON без пояснений.'},
+          {role:'user',content:prompt}
+        ],
+        temperature:0.7,
+        max_tokens:100
+      })
+    });
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content||'{}';
+    
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if(jsonMatch){
+      const result = JSON.parse(jsonMatch[0]);
+      return {
+        description: result.description || "ИИ Оптимизированный",
+        timeModifier: parseFloat(result.timeModifier) || 1.0,
+        distModifier: parseFloat(result.distModifier) || 1.0
+      };
+    }
+  } catch(e){
+    console.error('AI route generation error:', e);
+  }
+  return {description: "ИИ Маршрут", timeModifier: 1.0, distModifier: 1.0};
+}
+
+async function fetchPlaceInfo(placeName) {
+  try {
+    if (state.placeInfoCache.has(placeName)) {
+      return state.placeInfoCache.get(placeName);
+    }
+
+    const searchQuery = encodeURIComponent(placeName);
+    const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${searchQuery}`;
+    
+    const response = await fetch(wikiUrl);
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.extract && data.thumbnail) {
+        const result = {
+          title: data.title || placeName,
+          description: data.extract,
+          imageUrl: data.thumbnail.source,
+          source: 'Wikipedia'
+        };
+        state.placeInfoCache.set(placeName, result);
+        return result;
+      }
+    }
+    
+    const ruWikiUrl = `https://ru.wikipedia.org/api/rest_v1/page/summary/${searchQuery}`;
+    const ruResponse = await fetch(ruWikiUrl);
+    
+    if (ruResponse.ok) {
+      const ruData = await ruResponse.json();
+      if (ruData.extract && ruData.thumbnail) {
+        const result = {
+          title: ruData.title || placeName,
+          description: ruData.extract,
+          imageUrl: ruData.thumbnail.source,
+          source: 'Wikipedia'
+        };
+        state.placeInfoCache.set(placeName, result);
+        return result;
+      }
+    }
+    
+    const aiPrompt = `Ты помощник по описанию мест. Дай краткое описание (2-3 предложения) для места: "${placeName}".
+Верни ТОЛЬКО JSON: {"description":"Описание места"}`;
+
+    const aiResponse = await fetch(OPENROUTER_CONFIG.endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_CONFIG.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.href,
+        'X-Title': 'auraMaps'
+      },
+      body: JSON.stringify({
+        model: OPENROUTER_CONFIG.model,
+        messages: [
+          {role: 'system', content: 'Ты помощник по описанию мест. Отвечай ТОЛЬКО JSON.'},
+          {role: 'user', content: aiPrompt}
+        ],
+        temperature: 0.5,
+        max_tokens: 150
+      })
+    });
+    
+    const aiData = await aiResponse.json();
+    const aiContent = aiData.choices?.[0]?.message?.content || '{}';
+    const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+    
+    let description = 'Информация о месте временно недоступна';
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        description = parsed.description || description;
+      } catch(e) {}
+    }
+    
+    const result = {
+      title: placeName,
+      description: description,
+      imageUrl: null,
+      source: 'AI Generated'
+    };
+    state.placeInfoCache.set(placeName, result);
+    return result;
+    
+  } catch (e) {
+    console.error('Fetch place info error:', e);
+    return {
+      title: placeName,
+      description: 'Не удалось загрузить описание',
+      imageUrl: null,
+      source: 'Error'
+    };
+  }
+}
+
+function renderPlaceInfo(info) {
+  const container = document.getElementById('placeInfoContainer');
+  
+  if (!info) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  const imageHtml = info.imageUrl 
+    ? `<img src="${info.imageUrl}" alt="${escapeHtml(info.title)}" onerror="this.parentElement.innerHTML='<div class=\\'fallback-icon\\'><span class=\\'material-symbols-rounded\\'>image_not_supported</span></div>'">`
+    : `<div class="fallback-icon"><span class="material-symbols-rounded">image_not_supported</span></div>`;
+  
+  container.innerHTML = `
+    <div class="place-info-card">
+      <div class="place-info-image">
+        ${imageHtml}
+      </div>
+      <div class="place-info-content">
+        <div class="place-info-header">
+          <div class="place-info-title">${escapeHtml(info.title)}</div>
+          <div class="place-info-badge">
+            <span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>
+            auraMaps
+          </div>
+        </div>
+        <div class="place-info-description">${escapeHtml(info.description)}</div>
+        <div class="place-info-footer">
+          <div class="place-info-source">Источник: ${info.source}</div>
+          <div class="place-info-refresh" id="refreshPlaceInfo" title="Обновить">
+            <span class="material-symbols-rounded">refresh</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Обработчик для кнопки обновления
+  const refreshBtn = document.getElementById('refreshPlaceInfo');
+  if(refreshBtn){
+    refreshBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.placeInfoCache.delete(info.title);
+      fetchPlaceInfo(info.title).then(newInfo => renderPlaceInfo(newInfo));
+    });
+  }
+}
+
+async function buildRoutes(from,to,name='Маршрут'){
+  if(state.routingControl) state.map.removeControl(state.routingControl);
+  showSnackbar('🛣️ Строим маршрут...');
+  
+  const profile = state.settings.transport==='bike'?'cycling':state.settings.transport==='foot'?'foot':'driving';
+  
+  try{
+    const url = `https://router.project-osrm.org/route/v1/${profile}/${from[1]},${from[0]};${to[1]},${to[0]}?alternatives=2&overview=full&geometries=geojson&steps=true`;
+    const r = await fetch(url);
+    const data = await r.json();
+    
+    if(!data.routes || data.routes.length===0){showSnackbar('Маршрут не найден');return}
+    
+    state.routes = data.routes.map((route,i)=>{
+      const distKm = (route.distance/1000).toFixed(1);
+      const durMin = Math.round(route.duration/60);
+      const descriptions = ['Самый быстрый','Оптимальный','Альтернативный'];
+      const trafficLevel = Math.floor(Math.random() * 11);
+      return {
+        geometry: route.geometry,
+        distance: distKm,
+        duration: durMin,
+        description: descriptions[i] || 'Маршрут',
+        steps: route.legs[0]?.steps || [],
+        destination: name,
+        from: from,
+        to: to,
+        traffic: trafficLevel
+      };
+    });
+    
+    showSnackbar('🤖 ИИ анализирует маршруты...');
+    try{
+      const aiInfo = await getAIRoute(from, to, state.routes[0]);
+      const aiRoute = {
+        geometry: state.routes[0].geometry,
+        distance: (state.routes[0].distance * aiInfo.distModifier).toFixed(1),
+        duration: Math.round(state.routes[0].duration * aiInfo.timeModifier),
+        description: aiInfo.description,
+        steps: state.routes[0].steps,
+        destination: name,
+        from: from,
+        to: to,
+        traffic: Math.floor(Math.random() * 5),
+        isAI: true
+      };
+      state.routes.unshift(aiRoute);
+    } catch(e){
+      console.error('Failed to generate AI route', e);
+    }
+    
+    showRouteSelection();
+    renderRouteSelection();
+    showRouteOnMap(state.routes[0]);
+    
+    showSnackbar('📖 Загружаем информацию о месте...');
+    const placeInfo = await fetchPlaceInfo(name.split(',')[0]);
+    renderPlaceInfo(placeInfo);
+    
+    showSnackbar(`✅ Найдено ${state.routes.length} варианта (включая ИИ)`);
+  }catch(e){
+    console.error(e);
+    showSnackbar('Ошибка построения маршрута');
+  }
+}
+
+function showRouteSelection(){
+  const container = document.getElementById('routeSelectionContainer');
+  container.style.display = 'block';
+  
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.nav-item[data-tab="home"]').classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-home').classList.add('active');
+}
+
+function renderRouteSelection(){
+  const list = document.getElementById('routeSelectionList');
+  const units = state.settings.units;
+  
+  list.innerHTML = state.routes.map((r,i)=>{
+    const dist = units==='mi' ? (r.distance*0.621371).toFixed(1)+' mi' : r.distance+' км';
+    const trafficClass = r.traffic <= 3 ? 'low' : r.traffic <= 6 ? 'medium' : 'high';
+    const trafficText = trafficClass === 'low' ? 'Низкие' : trafficClass === 'medium' ? 'Средние' : 'Высокие';
+    const aiBadge = r.isAI ? `<div class="ai-badge" style="margin-bottom:6px"><span class="material-symbols-rounded" style="font-size:14px">auto_awesome</span> AI Route</div>` : '';
+    
+    return `
+      <div class="route-card ${i===0?'selected':''}" data-idx="${i}">
+        ${aiBadge}
+        <div class="route-header">
+          <div class="route-time">${r.duration} мин</div>
+          <div class="route-dist">${dist}</div>
+        </div>
+        <div class="route-desc">${r.description} • ${escapeHtml(r.destination.split(',')[0])}</div>
+        <div class="traffic-indicator ${trafficClass}">
+          <span class="material-symbols-rounded">traffic</span>
+          Пробки: ${trafficText} (${r.traffic}/10)
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  list.querySelectorAll('.route-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      list.querySelectorAll('.route-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      const idx = parseInt(card.dataset.idx);
+      showRouteOnMap(state.routes[idx]);
+      state.currentRoute = state.routes[idx];
+    });
+  });
+  
+  if(state.routes.length > 0){
+    state.currentRoute = state.routes[0];
+  }
+}
+
+function showRouteOnMap(route){
+  if(state.routingControl) state.map.removeControl(state.routingControl);
+  const coords = route.geometry.coordinates.map(c=>[c[1],c[0]]);
+  const primary = getComputedStyle(document.documentElement).getPropertyValue('--md-primary').trim();
+  const polyline = L.polyline(coords,{
+    color:primary,weight:6,opacity:.85,lineCap:'round',lineJoin:'round'
+  }).addTo(state.map);
+  state.routingControl = {remove:()=>state.map.removeLayer(polyline)};
+  state.map.fitBounds(polyline.getBounds(),{padding:[60,60]});
+}
+
+function showRouteOnNavMap(route){
+  if(!state.navMap) return;
+  state.navMap.eachLayer(l=>{
+    if(l instanceof L.Polyline && !(l instanceof L.Marker)){
+      state.navMap.removeLayer(l);
+    }
+  });
+  const coords = route.geometry.coordinates.map(c=>[c[1],c[0]]);
+  const primary = getComputedStyle(document.documentElement).getPropertyValue('--md-primary').trim();
+  L.polyline(coords,{color:primary,weight:8,opacity:.9}).addTo(state.navMap);
+  state.navMap.fitBounds(L.polyline(coords).getBounds(),{padding:[60,60]});
+}
+
+function getFavorites(){
+  return JSON.parse(localStorage.getItem('aura_favorites')||'[]');
+}
+
+function saveFavorites(favs){
+  localStorage.setItem('aura_favorites',JSON.stringify(favs));
+}
+
+function toggleFavorite(route){
+  let favs = getFavorites();
+  const exists = favs.findIndex(f=>f.name===route.destination && f.from[0]===route.from[0] && f.from[1]===route.from[1]);
+  if(exists>=0){
+    favs.splice(exists,1);
+    showSnackbar('Удалено из избранного');
+  } else {
+    favs.unshift({
+      name: route.destination,
+      from: route.from,
+      to: route.to,
+      distance: route.distance,
+      duration: route.duration,
+      description: route.description,
+      addedAt: Date.now()
+    });
+    showSnackbar('⭐ Добавлено в избранное');
+  }
+  saveFavorites(favs);
+  loadFavorites();
+}
+
+function loadFavorites(){
+  const favs = getFavorites();
+  const list = document.getElementById('favoritesList');
+  if(favs.length===0){
+    list.innerHTML=`
+      <div class="empty-state">
+        <span class="material-symbols-rounded">star_border</span>
+        <div class="title">Нет избранных маршрутов</div>
+        <div class="subtitle">Нажмите ★ на карточке маршрута</div>
+      </div>`;
+    return;
+  }
+  const units = state.settings.units;
+  list.innerHTML = favs.map((f,i)=>{
+    const dist = units==='mi' ? (f.distance*0.621371).toFixed(1)+' mi' : f.distance+' км';
+    const date = new Date(f.addedAt).toLocaleDateString('ru-RU');
+    return `
+      <div class="route-card" data-idx="${i}">
+        <button class="fav-btn active" data-idx="${i}" title="Удалить">
+          <span class="material-symbols-rounded">star</span>
+        </button>
+        <div class="route-header">
+          <div class="route-time">${f.duration} мин</div>
+          <div class="route-dist">${dist}</div>
+        </div>
+        <div class="route-desc">${escapeHtml(f.name.split(',')[0])}</div>
+        <div style="font-size:11px;color:var(--md-on-surface-variant);margin-top:6px">Добавлено ${date}</div>
+      </div>
+    `;
+  }).join('');
+  
+  list.querySelectorAll('.route-card').forEach(card=>{
+    card.addEventListener('click',e=>{
+      if(e.target.closest('.fav-btn')) return;
+      const idx = parseInt(card.dataset.idx);
+      const f = favs[idx];
+      buildRoutes(f.from, f.to, f.name);
+    });
+  });
+  
+  list.querySelectorAll('.fav-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      let favs = getFavorites();
+      favs.splice(idx,1);
+      saveFavorites(favs);
+      loadFavorites();
+      showSnackbar('Удалено из избранного');
+    });
+  });
+}
+
+function startNavigation(){
+  if(!state.currentRoute){showSnackbar('Сначала выберите маршрут');return}
+  state.isNavigating = true;
+  state.maxReachedIndex = 0;
+  document.getElementById('navOverlay').classList.add('active');
+  document.getElementById('navInfoPanel').style.display='block';
+  document.getElementById('bottomSheet').classList.add('collapsed');
+  document.getElementById('routeSelectionContainer').style.display = 'none';
+  
+  setTimeout(()=>{
+    if(state.navMap) state.navMap.remove();
+    state.navMap = L.map('navMap',{zoomControl:false,attributionControl:false,preferCanvas:true}).setView(state.userPos||[55.75,37.6],16);
+    applyMapProviderTo(state.navMap);
+    
+    showRouteOnNavMap(state.currentRoute);
+    
+    if(state.userPos){
+      const icon = L.divIcon({
+        className:'',
+        html:`<div style="position:relative;width:20px;height:20px"><div class="pulse"></div><div style="position:absolute;inset:6px;background:var(--md-primary);border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div></div>`,
+        iconSize:[20,20],iconAnchor:[10,10]
+      });
+      state.navUserMarker = L.marker(state.userPos,{icon}).addTo(state.navMap);
+    }
+  },100);
+  
+  updateNavUI();
+  showSnackbar('🧭 Навигация запущена');
+  announceNavigation('Навигация начата. В пути '+state.currentRoute.duration+' минут');
+}
+
+function cancelRouteSelection(){
+  document.getElementById('routeSelectionContainer').style.display = 'none';
+  state.routes = [];
+  state.currentRoute = null;
+  if(state.routingControl){
+    state.routingControl.remove();
+    state.routingControl = null;
+  }
+  if(state.destMarker){
+    state.map.removeLayer(state.destMarker);
+    state.destMarker = null;
+  }
+  document.getElementById('placeInfoContainer').innerHTML = '';
+}
+
+function stopNavigation(){
+  state.isNavigating = false;
+  document.getElementById('navOverlay').classList.remove('active');
+  document.getElementById('navInfoPanel').style.display='none';
+  if(state.navMap){state.navMap.remove();state.navMap=null}
+  state.navUserMarker = null;
+  state.navPolyline = null;
+  state.maxReachedIndex = 0;
+  
+  // FIX: Удаляем маршрут с основной карты при завершении навигации
+  if(state.routingControl){
+    state.routingControl.remove();
+    state.routingControl = null;
+  }
+  if(state.destMarker){
+    state.map.removeLayer(state.destMarker);
+    state.destMarker = null;
+  }
+  showSnackbar('Навигация завершена');
+}
+
+function updateNavUI(){
+  if(!state.currentRoute) return;
+  const units = state.settings.units;
+  const dist = units==='mi' ? (state.currentRoute.distance*0.621371).toFixed(1)+' mi' : state.currentRoute.distance+' км';
+  document.getElementById('navETA').textContent = '⏱ '+state.currentRoute.duration+' мин';
+  document.getElementById('navRemaining').textContent = '📍 '+dist;
+  document.getElementById('navDistance').textContent = 'Продолжайте';
+  document.getElementById('navStreet').textContent = 'Двигайтесь по маршруту';
+  document.getElementById('navIcon').textContent = 'straight';
+}
+
+function updateNavigation(coords){
+  if(!state.currentRoute) return;
+  
+  const dest = state.currentRoute.to;
+  const distToDest = calculateDistance(coords.latitude, coords.longitude, dest[0], dest[1]);
+  if(distToDest < 0.02){
+    showSnackbar('🏁 Вы прибыли на место!');
+    announceNavigation('Вы прибыли на место');
+    stopNavigation();
+    return;
+  }
+
+  if(state.settings.autoZoom && coords.speed){
+    const speed = coords.speed * 3.6;
+    const speedDisplay = state.settings.units==='mi' ? Math.round(speed*0.621371)+' mph' : Math.round(speed)+' км/ч';
+    document.getElementById('navSpeed').textContent = '🚗 '+speedDisplay;
+    let zoom = 16;
+    if(speed>60) zoom=14;
+    else if(speed>30) zoom=15;
+    if(state.navMap && state.navMap.getZoom()!==zoom) state.navMap.setZoom(zoom);
+  }
+}
+
+function trimRoute(lat, lon){
+  if(!state.currentRoute || !state.navMap) return;
+  const coords = state.currentRoute.geometry.coordinates;
+  let minDist = Infinity;
+  let closestIdx = state.maxReachedIndex;
+  
+  const startIdx = Math.max(0, state.maxReachedIndex - 2);
+  for(let i = startIdx; i < coords.length; i++){
+    const c = coords[i];
+    const d = calculateDistance(lat, lon, c[1], c[0]);
+    if(d < minDist){
+      minDist = d;
+      closestIdx = i;
+    }
+  }
+  
+  if(closestIdx > state.maxReachedIndex){
+    state.maxReachedIndex = closestIdx;
+  }
+  
+  const remainingCoords = coords.slice(state.maxReachedIndex).map(c => [c[1], c[0]]);
+  remainingCoords.unshift([lat, lon]);
+  
+  state.navMap.eachLayer(l => {
+    if(l instanceof L.Polyline && !(l instanceof L.Marker)){
+      state.navMap.removeLayer(l);
+    }
+  });
+  
+  const primary = getComputedStyle(document.documentElement).getPropertyValue('--md-primary').trim();
+  state.navPolyline = L.polyline(remainingCoords, {color: primary, weight: 8, opacity: .9}).addTo(state.navMap);
+}
+
+// FIX: Не перестраивать маршрут если близко к финишу
+let rerouteCooldown = false;
+function checkRouteDeviation(lat, lon){
+  if(!state.currentRoute || !state.isNavigating || rerouteCooldown) return;
+  
+  // Не перестраиваем если близко к финишу (< 100м)
+  const dest = state.currentRoute.to;
+  const distToDest = calculateDistance(lat, lon, dest[0], dest[1]);
+  if(distToDest < 0.1) return;
+  
+  const coords = state.currentRoute.geometry.coordinates;
+  let minDist = Infinity;
+  
+  for(let i = state.maxReachedIndex; i < coords.length; i++){
+    const c = coords[i];
+    const d = calculateDistance(lat, lon, c[1], c[0]);
+    if(d < minDist) minDist = d;
+  }
+  
+  if(minDist > 0.05 && state.maxReachedIndex < coords.length - 2){
+    rerouteCooldown = true;
+    showSnackbar('🤖 Вы свернули не туда. ИИ перестраивает маршрут...');
+    aiReroute(lat, lon);
+    setTimeout(() => { rerouteCooldown = false; }, 15000);
+  }
+}
+
+// FIX: Проверка что маршрут найден
+async function aiReroute(lat, lon){
+  try{
+    const profile = state.settings.transport==='bike'?'cycling':state.settings.transport==='foot'?'foot':'driving';
+    const dest = state.currentRoute.to;
+    const name = state.currentRoute.destination;
+    
+    fetch(OPENROUTER_CONFIG.endpoint, {
+      method:'POST',
+      headers:{
+        'Authorization':`Bearer ${OPENROUTER_CONFIG.apiKey}`,
+        'Content-Type':'application/json',
+        'HTTP-Referer':window.location.href,
+        'X-Title':'auraMaps'
+      },
+      body:JSON.stringify({
+        model:OPENROUTER_CONFIG.model,
+        messages:[
+          {role:'system',content:'Ты навигационный ИИ. Отвечай очень коротко.'},
+          {role:'user',content:`Пользователь сбился с пути. Сгенерируй короткое уведомление (до 8 слов) о том, что маршрут перестраивается с учетом новой ситуации.`}
+        ],
+        max_tokens:20
+      })
+    }).then(r => r.json()).then(d => {
+      const msg = d.choices?.[0]?.message?.content || "Маршрут перестроен ИИ";
+      showSnackbar('🤖 ' + msg.replace(/"/g, ''));
+    }).catch(() => {});
+    
+    const url = `https://router.project-osrm.org/route/v1/${profile}/${lon},${lat};${dest[1]},${dest[0]}?alternatives=false&overview=full&geometries=geojson&steps=true`;
+    const r = await fetch(url);
+    const data = await r.json();
+    
+    if(!data.routes || data.routes.length === 0){
+      showSnackbar('❌ Не удалось найти новый маршрут');
+      return;
+    }
+    
+    const route = data.routes[0];
+    state.currentRoute = {
+      geometry: route.geometry,
+      distance: (route.distance/1000).toFixed(1),
+      duration: Math.round(route.duration/60),
+      description: 'ИИ Перестроенный',
+      steps: route.legs[0]?.steps || [],
+      destination: name,
+      from: [lat, lon],
+      to: dest,
+      traffic: Math.floor(Math.random() * 11),
+      isAI: true
+    };
+    state.maxReachedIndex = 0;
+    
+    if(state.navMap){
+      showRouteOnNavMap(state.currentRoute);
+    }
+    
+    updateNavUI();
+    announceNavigation('Маршрут перестроен');
+  } catch(e){
+    console.error('AI Reroute error:', e);
+    showSnackbar('Не удалось перестроить маршрут');
+  }
+}
+
+function addRecent(name,coords){
+  let recents = JSON.parse(localStorage.getItem('aura_recents')||'[]');
+  recents = recents.filter(r=>r.name!==name);
+  recents.unshift({name,coords});
+  recents = recents.slice(0,5);
+  localStorage.setItem('aura_recents',JSON.stringify(recents));
+  loadRecents();
+}
+
+// FIX: Используем data-атрибуты вместо замыкания
+function loadRecents(){
+  const recents = JSON.parse(localStorage.getItem('aura_recents')||'[]');
+  const list = document.getElementById('recentList');
+  if(recents.length===0){
+    list.innerHTML='<p style="color:var(--md-on-surface-variant);font-size:13px;padding:8px 0">Пока пусто</p>';
+    return;
+  }
+  list.innerHTML = recents.map((r, i) => `
+    <div class="route-card" style="padding:12px;margin-bottom:8px" data-recent-idx="${i}">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="material-symbols-rounded" style="color:var(--md-primary)">history</span>
+        <div style="flex:1;font-size:14px">${escapeHtml(r.name.split(',')[0])}</div>
+      </div>
+    </div>
+  `).join('');
+  
+  list.querySelectorAll('[data-recent-idx]').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.recentIdx);
+      const r = recents[idx];
+      if(r){
+        state.map.setView(r.coords,14);
+        if(state.userPos) buildRoutes(state.userPos,r.coords,r.name);
+      }
+    });
+  });
+}
+
+function applyAccentColor(hex){
+  const r = document.documentElement;
+  r.style.setProperty('--md-primary',hex);
+  r.style.setProperty('--md-on-primary',getContrast(hex));
+  r.style.setProperty('--md-primary-container',lighten(hex,.85));
+  r.style.setProperty('--md-on-primary-container',darken(hex,.3));
+  r.style.setProperty('--md-secondary-container',lighten(hex,.9));
+  r.style.setProperty('--md-inverse-primary',hex);
+  document.querySelector('meta[name="theme-color"]').content = hex;
+}
+
+function hexToRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function rgbToHex(r,g,b){return '#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('')}
+function lighten(h,a){const[r,g,b]=hexToRgb(h);return rgbToHex(r+(255-r)*a,g+(255-g)*a,b+(255-b)*a)}
+function darken(h,a){const[r,g,b]=hexToRgb(h);return rgbToHex(r*(1-a),g*(1-a),b*(1-a))}
+function getContrast(h){const[r,g,b]=hexToRgb(h);const l=(0.299*r+0.587*g+0.114*b)/255;return l>0.6?'#1D1B20':'#FFFFFF'}
+
+function applySettings(){
+  document.getElementById('voiceToggle').checked = state.settings.voice;
+  document.getElementById('notifToggle').checked = state.settings.notifications;
+  document.getElementById('autoZoomToggle').checked = state.settings.autoZoom;
+  document.getElementById('avoidTollsToggle').checked = state.settings.avoidTolls;
+  document.querySelectorAll('.color-swatch').forEach(s=>{
+    s.classList.toggle('selected',s.dataset.color===state.settings.color);
+  });
+  document.getElementById('mapProvider').value = state.settings.provider;
+  document.querySelectorAll('#transportSegmented button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.transport===state.settings.transport);
+  });
+  document.querySelectorAll('#unitsSegmented button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.units===state.settings.units);
+  });
+}
+
+function saveSettings(){
+  localStorage.setItem('aura_settings',JSON.stringify(state.settings));
+}
+
+function setupEvents(){
+  document.querySelectorAll('.nav-item').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+      document.getElementById('tab-'+tab).classList.add('active');
+      const sheet = document.getElementById('bottomSheet');
+      sheet.classList.remove('collapsed');
+      
+      if(tab !== 'home'){
+        document.getElementById('routeSelectionContainer').style.display = 'none';
+      }
+      
+      if(tab === 'gas'){
+        displayGasStationsOnMap();
+      } else {
+        state.gasMarkers.forEach(marker => state.map.removeLayer(marker));
+        state.gasMarkers = [];
+      }
+    });
+  });
+
+  const sheet = document.getElementById('bottomSheet');
+  const handle = sheet.querySelector('.sheet-handle');
+  let startY;
+  handle.addEventListener('touchstart',e=>{
+    startY = e.touches[0].clientY;
+    sheet.style.transition='none';
+  });
+  handle.addEventListener('touchmove',e=>{
+    const dy = e.touches[0].clientY - startY;
+    if(dy>0) sheet.style.transform = `translateY(${dy}px)`;
+  });
+  handle.addEventListener('touchend',e=>{
+    sheet.style.transition='';
+    const dy = e.changedTouches[0].clientY - startY;
+    sheet.style.transform='';
+    if(dy>80) sheet.classList.add('collapsed');
+    else sheet.classList.remove('collapsed');
+  });
+  handle.addEventListener('click',()=>sheet.classList.toggle('collapsed'));
+
+  document.getElementById('locateBtn').addEventListener('click',()=>{
+    if(state.userPos){state.map.setView(state.userPos,16);showSnackbar('📍 Ваше местоположение')}
+    else{requestLocation()}
+  });
+
+  document.getElementById('demoRouteBtn').addEventListener('click',()=>{
+    if(!state.userPos){showSnackbar('Сначала определите местоположение');return}
+    const dest = [
+      state.userPos[0] + (Math.random()-.5)*0.05,
+      state.userPos[1] + (Math.random()-.5)*0.08
+    ];
+    document.getElementById('fullscreenSearchInput').value = 'Случайная точка';
+    performSmartSearch('Случайная точка');
+  });
+
+  document.getElementById('cancelRouteSelection').addEventListener('click',cancelRouteSelection);
+  document.getElementById('startNavigationBtn').addEventListener('click',startNavigation);
+
+  document.getElementById('exitNavBtn').addEventListener('click',stopNavigation);
+
+  document.getElementById('navMenuBtn').addEventListener('click',()=>{
+    document.getElementById('drawerOverlay').classList.add('active');
+  });
+
+  document.getElementById('navLocateBtn').addEventListener('click',()=>{
+    if(state.navMap && state.userPos){
+      state.navMap.setView(state.userPos,16);
+      showSnackbar('📍 Центрировано');
+    }
+  });
+
+  document.getElementById('navZoomIn').addEventListener('click',()=>{
+    if(state.navMap) state.navMap.zoomIn();
+  });
+  document.getElementById('navZoomOut').addEventListener('click',()=>{
+    if(state.navMap) state.navMap.zoomOut();
+  });
+  document.getElementById('navRecenter').addEventListener('click',()=>{
+    if(state.navMap && state.userPos){
+      state.navMap.setView(state.userPos,16);
+      showSnackbar('📍 Центрировано');
+    }
+  });
+  document.getElementById('navRouteInfo').addEventListener('click',()=>{
+    if(!state.currentRoute){
+      showSnackbar('Маршрут не построен');
+      return;
+    }
+    const units = state.settings.units;
+    const dist = units==='mi' ? (state.currentRoute.distance*0.621371).toFixed(1)+' mi' : state.currentRoute.distance+' км';
+    const trafficClass = state.currentRoute.traffic <= 3 ? 'low' : state.currentRoute.traffic <= 6 ? 'medium' : 'high';
+    const trafficText = trafficClass === 'low' ? 'Низкие' : trafficClass === 'medium' ? 'Средние' : 'Высокие';
+    
+    document.getElementById('modalContent').innerHTML = `
+      <h2>Информация о маршруте</h2>
+      <div style="margin-bottom:16px">
+        <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:4px">Расстояние</div>
+        <div style="font-size:20px;font-weight:500">${dist}</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:4px">Время в пути</div>
+        <div style="font-size:20px;font-weight:500">${state.currentRoute.duration} мин</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:4px">Пробки</div>
+        <div class="traffic-indicator ${trafficClass}" style="font-size:14px">
+          <span class="material-symbols-rounded">traffic</span>
+          ${trafficText} (${state.currentRoute.traffic}/10)
+        </div>
+      </div>
+      <div>
+        <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:4px">Куда</div>
+        <div style="font-size:16px">${escapeHtml(state.currentRoute.destination)}</div>
+      </div>
+    `;
+    openModal();
+  });
+  document.getElementById('navLayers').addEventListener('click',()=>{
+    document.getElementById('modalContent').innerHTML = `
+      <h2>Слои карты</h2>
+      <div class="segmented" id="layerSegmented" style="margin-bottom:16px">
+        <button data-layer="osm" class="${state.settings.provider==='osm'?'active':''}">Схема</button>
+        <button data-layer="google" class="${state.settings.provider==='google'?'active':''}">Google</button>
+        <button data-layer="yandex" class="${state.settings.provider==='yandex'?'active':''}">Яндекс</button>
+      </div>
+      <button class="md-btn filled full" id="applyLayerBtn">Применить</button>
+    `;
+    openModal();
+    
+    document.querySelectorAll('#layerSegmented button').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('#layerSegmented button').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+    
+    document.getElementById('applyLayerBtn').addEventListener('click',()=>{
+      const activeBtn = document.querySelector('#layerSegmented button.active');
+      if(activeBtn){
+        state.settings.provider = activeBtn.dataset.layer;
+        saveSettings();
+        if(state.navMap) applyMapProviderTo(state.navMap);
+        applyMapProvider();
+        showSnackbar('Слой карты изменён');
+        closeModal();
+      }
+    });
+  });
+
+  document.querySelectorAll('#themeSegmented button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      applyThemeMode(btn.dataset.theme);
+      showSnackbar('Тема изменена');
+    });
+  });
+
+  document.querySelectorAll('#transportSegmented button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#transportSegmented button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.settings.transport = btn.dataset.transport;
+      saveSettings();
+      showSnackbar('Тип транспорта: '+btn.textContent.trim());
+    });
+  });
+
+  document.querySelectorAll('#unitsSegmented button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#unitsSegmented button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.settings.units = btn.dataset.units;
+      saveSettings();
+      showSnackbar('Единицы: '+btn.textContent.trim());
+    });
+  });
+
+  document.getElementById('voiceToggle').addEventListener('change',e=>{
+    state.settings.voice = e.target.checked;
+    saveSettings();
+  });
+  document.getElementById('notifToggle').addEventListener('change',e=>{
+    state.settings.notifications = e.target.checked;
+    saveSettings();
+    if(e.target.checked && 'Notification' in window) Notification.requestPermission();
+  });
+  document.getElementById('autoZoomToggle').addEventListener('change',e=>{
+    state.settings.autoZoom = e.target.checked;
+    saveSettings();
+  });
+  document.getElementById('avoidTollsToggle').addEventListener('change',e=>{
+    state.settings.avoidTolls = e.target.checked;
+    saveSettings();
+  });
+
+  const providerSelect = document.getElementById('mapProvider');
+  providerSelect.addEventListener('change',e=>{
+    const v = e.target.value;
+    state.settings.provider = v;
+    applyMapProvider();
+    saveSettings();
+    showSnackbar('Провайдер изменён');
+  });
+
+  document.querySelectorAll('.color-swatch').forEach(sw=>{
+    sw.addEventListener('click',()=>{
+      document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+      sw.classList.add('selected');
+      state.settings.color = sw.dataset.color;
+      applyAccentColor(sw.dataset.color);
+      saveSettings();
+      showSnackbar('🎨 Цвет изменён');
+    });
+  });
+
+  document.getElementById('fabBtn').addEventListener('click',()=>{
+    document.getElementById('modalContent').innerHTML = `
+      <h2>Быстрые действия</h2>
+      <button class="md-btn tonal full" id="modalDemo" style="margin-bottom:8px">
+        <span class="material-symbols-rounded">route</span>
+        Демо-маршрут
+      </button>
+      <button class="md-btn tonal full" id="modalLocate">
+        <span class="material-symbols-rounded">my_location</span>
+        Моё местоположение
+      </button>
+    `;
+    openModal();
+    document.getElementById('modalDemo').addEventListener('click',()=>{
+      closeModal();
+      document.getElementById('demoRouteBtn').click();
+    });
+    document.getElementById('modalLocate').addEventListener('click',()=>{
+      closeModal();
+      document.getElementById('locateBtn').click();
+    });
+  });
+
+  document.getElementById('clearDataBtn').addEventListener('click',()=>{
+    localStorage.removeItem('aura_recents');
+    loadRecents();
+    showSnackbar('История очищена');
+  });
+
+  document.getElementById('exportDataBtn').addEventListener('click',()=>{
+    const favs = getFavorites();
+    if(favs.length===0){showSnackbar('Нет избранного для экспорта');return}
+    const data = JSON.stringify(favs,null,2);
+    const blob = new Blob([data],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'auramaps_favorites.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showSnackbar('Экспортировано '+favs.length+' маршрутов');
+  });
+
+  document.getElementById('closeModal').addEventListener('click',closeModal);
+  document.getElementById('modalOverlay').addEventListener('click',e=>{
+    if(e.target.id==='modalOverlay') closeModal();
+  });
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{
+    if(state.settings.theme==='auto') applyThemeMode('auto');
+  });
+
+  const drawerOverlay = document.getElementById('drawerOverlay');
+  
+  document.getElementById('menuBtn').addEventListener('click',()=>{
+    drawerOverlay.classList.add('active');
+  });
+  
+  drawerOverlay.addEventListener('click',e=>{
+    if(e.target===drawerOverlay){
+      drawerOverlay.classList.remove('active');
+    }
+  });
+  
+  document.getElementById('drawerHome').addEventListener('click',()=>{
+    drawerOverlay.classList.remove('active');
+    document.querySelector('.nav-item[data-tab="home"]').click();
+  });
+  
+  document.getElementById('drawerFavorites').addEventListener('click',()=>{
+    drawerOverlay.classList.remove('active');
+    document.querySelector('.nav-item[data-tab="favorites"]').click();
+  });
+  
+  document.getElementById('drawerGas').addEventListener('click',()=>{
+    drawerOverlay.classList.remove('active');
+    document.querySelector('.nav-item[data-tab="gas"]').click();
+  });
+  
+  document.getElementById('drawerSettings').addEventListener('click',()=>{
+    drawerOverlay.classList.remove('active');
+    document.querySelector('.nav-item[data-tab="settings"]').click();
+  });
+  
+  document.getElementById('drawerAbout').addEventListener('click',()=>{
+    drawerOverlay.classList.remove('active');
+    document.getElementById('modalContent').innerHTML = `
+      <h2>О приложении</h2>
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:48px;margin-bottom:12px">🗺️</div>
+        <div style="font-size:24px;font-weight:500;margin-bottom:8px">auraMaps</div>
+        <div style="font-size:14px;color:var(--md-on-surface-variant);margin-bottom:20px">Версия 1.0</div>
+        <div style="font-size:13px;color:var(--md-on-surface-variant);line-height:1.6">
+          Мобильный навигатор с Material Design 3 Expressive<br>
+          AI-powered поиск • Бесплатные карты • Голосовая навигация
+        </div>
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--md-outline-variant)">
+          <div style="font-size:11px;font-weight:700;color:var(--md-on-surface-variant);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">The Aura Squad</div>
+          <div class="social-links centered inline">${renderSocialLinks()}</div>
+        </div>
+      </div>
+    `;
+    openModal();
+  });
+}
+
+function openModal(){document.getElementById('modalOverlay').classList.add('active')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active')}
+
+function showSnackbar(msg){
+  const t = document.getElementById('snackbar');
+  document.getElementById('snackbarText').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+init();
+</script>
+</body>
+</html>
