@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>auraDiabet — Калькулятор инсулина</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/beercss@4.0.23/dist/cdn/beer.min.css" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@4.0.23/dist/cdn/beer.min.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/material-dynamic-colors@1.1.4/dist/cdn/material-dynamic-colors.min.js"></script>
+
+<style>
+  :root {
+    --bg: #201710;
+    --accent: #EEB276;
+    --accent-2: #f5c896;
+    --accent-glow: rgba(238, 178, 118, 0.3);
+    --surface: #2b1f15;
+    --surface-2: #36271b;
+    --surface-3: #42311f;
+    --text: #f5e6d3;
+    --text-dim: #b8a087;
+    --border: #4a3624;
+    --success: #7ee8a0;
+    --danger: #ff7a7a;
+  }
+
+  * {
+    font-family: 'Unbounded', system-ui, sans-serif;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  body.dark, .dark {
+    --primary: var(--accent) !important;
+    --on-primary: #201710 !important;
+    --surface-variant: var(--surface) !important;
+    --on-surface: var(--text) !important;
+    --outline: var(--border) !important;
+    --background: var(--bg) !important;
+  }
+
+  main.responsive {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 14px;
+    padding-bottom: 120px;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 4px 16px var(--accent-glow); }
+    50% { box-shadow: 0 6px 28px var(--accent-glow), 0 0 40px var(--accent-glow); }
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Header */
+  header.app-bar {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+    border-radius: 20px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: slideUp 0.6s ease-out;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header.app-bar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    opacity: 0.25;
+    animation: rotate 25s linear infinite;
+    pointer-events: none;
+  }
+
+  header.app-bar .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #201710;
+    z-index: 1;
+    box-shadow: 0 4px 14px var(--accent-glow);
+  }
+
+  header.app-bar .logo i { font-size: 26px; }
+
+  header.app-bar h5 {
+    margin: 0;
+    color: var(--accent);
+    letter-spacing: 1px;
+    font-weight: 700;
+    z-index: 1;
+    font-size: 19px;
+  }
+
+  header.app-bar small {
+    color: var(--text-dim);
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    z-index: 1;
+    margin-top: 2px;
+    font-weight: 400;
+  }
+
+  .online-badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    color: var(--success);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 1;
+    font-weight: 600;
+  }
+  .online-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  /* Tabs */
+  nav.tabbed {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 14px;
+    padding: 4px;
+    display: flex;
+    gap: 4px;
+    animation: slideUp 0.6s ease-out 0.05s backwards;
+  }
+  nav.tabbed a {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    border-radius: 12px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
+  }
+  nav.tabbed a i { font-size: 18px; }
+  nav.tabbed a.active {
+    background: var(--accent);
+    color: #201710;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+
+  .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+  .tab-content.active { display: block; }
+
+  /* Cards */
+  article.card {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 22px !important;
+    padding: 18px !important;
+    margin-bottom: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideUp 0.6s ease-out backwards;
+  }
+
+  article.card:nth-of-type(2) { animation-delay: 0.05s; }
+  article.card:nth-of-type(3) { animation-delay: 0.1s; }
+  article.card:nth-of-type(4) { animation-delay: 0.15s; }
+
+  article.card:hover {
+    border-color: var(--accent) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  article.card h6 {
+    color: var(--accent);
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  article.card h6 i {
+    font-size: 20px;
+    filter: drop-shadow(0 0 6px var(--accent-glow));
+  }
+
+  /* Chips */
+  .chips-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 12px;
+  }
+
+  .chip {
+    background: var(--surface-2) !important;
+    color: var(--text-dim) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 999px !important;
+    padding: 7px 14px !important;
+    font-size: 12px !important;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 0 !important;
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .chip:hover {
+    background: var(--surface-3) !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-1px);
+  }
+
+  .chip.active {
+    background: var(--accent) !important;
+    color: #201710 !important;
+    border-color: var(--accent) !important;
+    font-weight: 700;
+    box-shadow: 0 4px 12px var(--accent-glow);
+  }
+
+  /* Unit switch */
+  .unit-switch {
+    display: flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 14px;
+    gap: 4px;
+  }
+  .unit-switch button {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    letter-spacing: 0.3px;
+  }
+  .unit-switch button.active {
+    background: var(--accent);
+    color: #201710;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+
+  /* Presets */
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .preset {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    user-select: none;
+  }
+  .preset:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .preset .emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+  .preset .name { font-size: 11px; font-weight: 600; color: var(--text); display: block; }
+  .preset .kcal { font-size: 9px; color: var(--text-dim); margin-top: 2px; display: block; }
+
+  /* Inputs */
+  .field.label.border { margin-bottom: 10px; }
+
+  .field.label.border input,
+  .field.label.border select {
+    background: var(--surface-2) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    padding: 12px 14px;
+    font-family: inherit;
+  }
+
+  .field.label.border label {
+    color: var(--text-dim) !important;
+    background: transparent !important;
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .field.label.border input:focus,
+  .field.label.border select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    outline: none;
+  }
+
+  .hint {
+    color: var(--text-dim);
+    font-size: 11px;
+    margin: 4px 0 8px 0;
+    line-height: 1.5;
+    letter-spacing: 0.3px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Result Card */
+  .result-card {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%) !important;
+    border: 2px solid var(--accent) !important;
+    border-radius: 22px !important;
+    padding: 22px 18px !important;
+    margin-bottom: 14px;
+    text-align: center;
+    animation: slideUp 0.5s ease-out;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--success), var(--accent));
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .result-card.hidden { display: none; }
+
+  .result-label {
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .result-value {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin: 6px 0;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 20px var(--accent-glow);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  .result-unit {
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .result-grid .cell {
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 10px 6px;
+    transition: all 0.3s ease;
+  }
+
+  .result-grid .cell:hover {
+    background: var(--surface-3);
+    transform: translateY(-2px);
+  }
+
+  .result-grid .cell .lbl {
+    color: var(--text-dim);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+  }
+
+  .result-grid .cell .val {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+
+  .result-correction {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--surface-2);
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: left;
+    line-height: 1.6;
+  }
+  .result-correction b { color: var(--accent); }
+
+  /* Settings */
+  details.settings {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+  }
+  details.settings:hover { border-color: var(--accent); }
+  details.settings summary {
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+  }
+  details.settings summary::-webkit-details-marker { display: none; }
+  details.settings[open] summary { color: var(--accent); margin-bottom: 10px; }
+  details.settings .field { margin-top: 8px; }
+
+  /* Button */
+  .calc-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%) !important;
+    color: #201710 !important;
+    border: none !important;
+    border-radius: 18px !important;
+    padding: 16px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 6px 20px var(--accent-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+  }
+
+  .calc-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .calc-btn:active::before { width: 400px; height: 400px; }
+
+  .calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--accent-glow);
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .calc-btn:active { transform: translateY(0) scale(0.98); }
+
+  .calc-btn i { font-size: 20px; }
+
+  .share-btn {
+    width: 100%;
+    background: var(--surface-2) !important;
+    color: var(--accent) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 14px !important;
+    padding: 12px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: inherit;
+  }
+  .share-btn:hover {
+    background: var(--surface-3) !important;
+    border-color: var(--accent) !important;
+  }
+
+  /* Database */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 20px;
+    pointer-events: none;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px 12px 44px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+  .search-wrap input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .product-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .product-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .product-item:hover {
+    border-color: var(--accent);
+    background: var(--surface-3);
+    transform: translateX(4px);
+  }
+  .product-item .emoji { font-size: 24px; }
+  .product-item .info { flex: 1; }
+  .product-item .name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .product-item .sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .product-item .carbs {
+    background: var(--accent);
+    color: #201710;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* History */
+  .history-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+  }
+  .history-empty i { font-size: 48px; color: var(--border); margin-bottom: 10px; display: block; }
+
+  .history-item {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.3s ease-out backwards;
+    position: relative;
+  }
+  .history-item .dose-badge {
+    background: var(--accent);
+    color: #201710;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 64px;
+    text-align: center;
+  }
+  .history-item .dose-badge small {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    opacity: 0.7;
+  }
+  .history-item .info { flex: 1; min-width: 0; }
+  .history-item .title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .history-item .meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .history-item .del {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  .history-item .del:hover { color: var(--danger); background: var(--surface-3); }
+
+  .clear-history {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 10px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.25s ease;
+  }
+  .clear-history:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* Footer */
+  footer.site-footer {
+    margin-top: 24px;
+    padding: 16px;
+    text-align: center;
+    border-top: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    line-height: 1.7;
+  }
+  footer.site-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+  }
+  footer.site-footer a:hover { opacity: 0.7; text-decoration: underline; }
+
+  /* Snackbar */
+  .snackbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90%;
+  }
+  .snackbar.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .snackbar i { color: var(--accent); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  @media (max-width: 400px) {
+    main.responsive { padding: 10px; }
+    .result-value { font-size: 44px; }
+    article.card { padding: 14px !important; }
+    .presets { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .preset { padding: 8px 4px; }
+    .preset .emoji { font-size: 18px; }
+    .preset .name { font-size: 10px; }
+    .result-grid .cell .val { font-size: 13px; }
+  }
+</style>
+</head>
+
+<body class="dark">
+
+<main class="responsive">
+
+  <header class="app-bar">
+    <div class="logo"><i>medical_information</i></div>
+    <div>
+      <h5>auraDiabet</h5>
+      <small>Калькулятор дозы инсулина</small>
+    </div>
+    <div class="online-badge"><span class="dot"></span><span id="statusText">online</span></div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabbed">
+    <a class="active" data-tab="calc"><i>calculate</i>Расчёт</a>
+    <a data-tab="db"><i>restaurant_menu</i>База</a>
+    <a data-tab="history"><i>history</i>История</a>
+  </nav>
+
+  <!-- ============ CALC TAB ============ -->
+  <div class="tab-content active" id="tab-calc">
+
+    <!-- РЕЗУЛЬТАТ -->
+    <article id="resultCard" class="result-card hidden">
+      <div class="result-label">Ваша доза</div>
+      <div class="result-value" id="doseValue">0.0</div>
+      <div class="result-unit">мл инсулина (U-100)</div>
+      <div class="result-grid">
+        <div class="cell">
+          <div class="lbl">Единиц</div>
+          <div class="val"><span id="unitsValue">0</span> ед</div>
+        </div>
+        <div class="cell">
+          <div class="lbl">Углеводов</div>
+          <div class="val"><span id="carbsValue">0</span> г</div>
+        </div>
+        <div class="cell">
+          <div class="lbl">ХЕ</div>
+          <div class="val"><span id="xeValue">0</span></div>
+        </div>
+      </div>
+      <div id="correctionBlock" class="result-correction" style="display:none;"></div>
+      <button class="share-btn" id="shareBtn">
+        <i>share</i> Поделиться расчётом
+      </button>
+    </article>
+
+    <!-- ЕДИНИЦЫ -->
+    <article class="card">
+      <h6><i>straighten</i> Единицы измерения</h6>
+      <div class="unit-switch">
+        <button class="active" data-unit="g">Грамм углеводов</button>
+        <button data-unit="xe">Хлебные единицы (ХЕ)</button>
+      </div>
+      <div class="hint" id="unitHint">Вводите углеводы в граммах. 1 ХЕ ≈ 12 г углеводов.</div>
+    </article>
+
+    <!-- ПРЕСЕТЫ -->
+    <article class="card">
+      <h6><i>event_note</i> Быстрые пресеты</h6>
+      <div class="presets" id="presets"></div>
+      <div class="hint">Тап по пресету — подставит типичные углеводы.</div>
+    </article>
+
+    <!-- ПРОДУКТ -->
+    <article class="card">
+      <h6><i>restaurant</i> Продукт</h6>
+      <div class="chips-wrap" id="productChips">
+        <div class="chip active" data-carbs="50">🍞 Хлеб</div>
+        <div class="chip" data-carbs="20">🍎 Фрукты</div>
+        <div class="chip" data-carbs="70">🍫 Сладкое</div>
+        <div class="chip" data-carbs="12">🥛 Молочное</div>
+        <div class="chip" data-carbs="25">🍚 Крупы</div>
+        <div class="chip" data-carbs="15">🥕 Овощи</div>
+        <div class="chip" data-carbs="0">⚖️ Другое</div>
+      </div>
+
+      <div class="field label border">
+        <input type="number" id="carbsPer100" value="50" min="0" step="0.1" inputmode="decimal">
+        <label id="carbsLabel">Углеводов на 100 г (г)</label>
+      </div>
+    </article>
+
+    <!-- МАССА -->
+    <article class="card">
+      <h6><i>scale</i> Масса порции</h6>
+      <div class="field label border">
+        <input type="number" id="portionWeight" value="0" min="0" step="1" inputmode="numeric">
+        <label id="portionLabel">Сколько наложил(а) в тарелку (г)</label>
+      </div>
+      <div class="hint" id="portionHint">По этому весу считается доза.</div>
+    </article>
+
+    <!-- САХАР -->
+    <article class="card">
+      <h6><i>bloodtype</i> Коррекция по сахару</h6>
+      <div class="row">
+        <div class="field label border">
+          <input type="number" id="currentSugar" value="" min="0" step="0.1" inputmode="decimal" placeholder="—">
+          <label>Текущий сахар (ммоль/л)</label>
+        </div>
+        <div class="field label border">
+          <input type="number" id="targetSugar" value="6.0" min="0" step="0.1" inputmode="decimal">
+          <label>Целевой сахар</label>
+        </div>
+      </div>
+      <div class="field label border">
+        <input type="number" id="sensitivity" value="3" min="0.1" step="0.1" inputmode="decimal">
+        <label>КС: ммоль/л на 1 ед. инсулина</label>
+      </div>
+      <div class="hint">Если сахар выше целевого — добавится коррекция. Если ниже — вычтется.</div>
+    </article>
+
+    <!-- НАСТРОЙКИ -->
+    <details class="settings">
+      <summary><i>tune</i> Углеводный коэффициент</summary>
+      <div class="field label border">
+        <input type="number" id="carbFactor" value="10" min="1" step="0.1" inputmode="decimal">
+        <label>УК: грамм углеводов на 1 ед. инсулина</label>
+      </div>
+      <div class="hint">По умолчанию: 1 ед. на 10 г углеводов.</div>
+    </details>
+
+    <!-- КНОПКА -->
+    <button class="calc-btn" id="calcBtn">
+      <i>calculate</i>
+      Рассчитать дозу
+    </button>
+
+  </div>
+
+  <!-- ============ DB TAB ============ -->
+  <div class="tab-content" id="tab-db">
+    <article class="card">
+      <h6><i>search</i> База продуктов</h6>
+      <div class="search-wrap">
+        <i>search</i>
+        <input type="text" id="dbSearch" placeholder="Поиск продукта...">
+      </div>
+      <div class="product-list" id="productList"></div>
+    </article>
+  </div>
+
+  <!-- ============ HISTORY TAB ============ -->
+  <div class="tab-content" id="tab-history">
+    <article class="card">
+      <h6><i>history</i> История расчётов</h6>
+      <div id="historyList"></div>
+      <button class="clear-history" id="clearHistory" style="display:none;">
+        <i>delete_sweep</i> Очистить историю
+      </button>
+    </article>
+  </div>
+
+  <footer class="site-footer">
+    Рассчитано в <a href="https://theaurasquad.github.io/auradiabet.html" target="_blank" rel="noopener">theaurasquad.github.io/auradiabet.html</a><br>
+    auraDiabet · 2026 · Не является медицинской рекомендацией
+  </footer>
+
+</main>
+
+<div class="snackbar" id="snackbar">
+  <i>check_circle</i>
+  <span id="snackbarText">Готово</span>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const PRODUCTS_DB = [
+  {e:'🍞', n:'Белый хлеб', c:50, cat:'Хлеб'},
+  {e:'🍞', n:'Ржаной хлеб', c:40, cat:'Хлеб'},
+  {e:'🥖', n:'Багет', c:55, cat:'Хлеб'},
+  {e:'🥐', n:'Круассан', c:45, cat:'Хлеб'},
+  {e:'🍚', n:'Рис белый (вар.)', c:25, cat:'Крупы'},
+  {e:'🍚', n:'Рис бурый (вар.)', c:23, cat:'Крупы'},
+  {e:'🥣', n:'Гречка (вар.)', c:20, cat:'Крупы'},
+  {e:'🥣', n:'Овсянка (вар.)', c:12, cat:'Крупы'},
+  {e:'🍝', n:'Макароны (вар.)', c:25, cat:'Крупы'},
+  {e:'🥔', n:'Картофель вар.', c:16, cat:'Овощи'},
+  {e:'🍟', n:'Картофель фри', c:30, cat:'Овощи'},
+  {e:'🥕', n:'Морковь', c:7, cat:'Овощи'},
+  {e:'🍅', n:'Томат', c:4, cat:'Овощи'},
+  {e:'🥒', n:'Огурец', c:3, cat:'Овощи'},
+  {e:'🥦', n:'Брокколи', c:4, cat:'Овощи'},
+  {e:'🍎', n:'Яблоко', c:10, cat:'Фрукты'},
+  {e:'🍌', n:'Банан', c:21, cat:'Фрукты'},
+  {e:'🍊', n:'Апельсин', c:8, cat:'Фрукты'},
+  {e:'🍇', n:'Виноград', c:16, cat:'Фрукты'},
+  {e:'🍓', n:'Клубника', c:8, cat:'Фрукты'},
+  {e:'🍉', n:'Арбуз', c:6, cat:'Фрукты'},
+  {e:'🥭', n:'Манго', c:15, cat:'Фрукты'},
+  {e:'🍫', n:'Шоколад молочный', c:55, cat:'Сладкое'},
+  {e:'🍫', n:'Шоколад тёмный', c:35, cat:'Сладкое'},
+  {e:'🍬', n:'Карамель', c:70, cat:'Сладкое'},
+  {e:'🍪', n:'Печенье', c:65, cat:'Сладкое'},
+  {e:'🍰', n:'Торт', c:45, cat:'Сладкое'},
+  {e:'🍦', n:'Мороженое', c:20, cat:'Сладкое'},
+  {e:'🍯', n:'Мёд', c:80, cat:'Сладкое'},
+  {e:'🥛', n:'Молоко 2.5%', c:5, cat:'Молочное'},
+  {e:'🧀', n:'Йогурт сладкий', c:12, cat:'Молочное'},
+  {e:'🍨', n:'Творожок', c:10, cat:'Молочное'},
+  {e:'🥤', n:'Кола', c:11, cat:'Напитки'},
+  {e:'🧃', n:'Сок яблочный', c:10, cat:'Напитки'},
+  {e:'🍺', n:'Пиво', c:4, cat:'Напитки'},
+  {e:'🍕', n:'Пицца', c:30, cat:'Готовое'},
+  {e:'🍔', n:'Бургер', c:25, cat:'Готовое'},
+  {e:'🥟', n:'Пельмени', c:18, cat:'Готовое'}
+];
+
+const PRESETS = [
+  {e:'🍳', n:'Завтрак', carbs:40},
+  {e:'🍱', n:'Обед', carbs:60},
+  {e:'🌙', n:'Ужин', carbs:50},
+  {e:'☕', n:'Перекус', carbs:20},
+  {e:'🍰', n:'Десерт', carbs:45},
+  {e:'🥤', n:'Напиток', carbs:25}
+];
+
+/* ============ STATE ============ */
+let currentUnit = 'g'; // g or xe
+let history = JSON.parse(localStorage.getItem('auraDiabet_history') || '[]');
+let lastResult = null;
+
+/* ============ UTILS ============ */
+const $ = id => document.getElementById(id);
+const XE_GRAMS = 12;
+
+function showSnackbar(text, icon='check_circle') {
+  const sb = $('snackbar');
+  $('snackbarText').textContent = text;
+  sb.querySelector('i').textContent = icon;
+  sb.classList.add('show');
+  clearTimeout(sb._t);
+  sb._t = setTimeout(() => sb.classList.remove('show'), 2200);
+}
+
+function animateValue(el, start, end, duration, decimals=1) {
+  const range = end - start;
+  const t0 = performance.now();
+  function tick(t) {
+    const p = Math.min((t - t0) / duration, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = (start + range * e).toFixed(decimals);
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = end.toFixed(end % 1 === 0 && decimals > 0 ? 1 : decimals);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============ TABS ============ */
+document.querySelectorAll('nav.tabbed a').forEach(a => {
+  a.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabbed a').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    $('tab-' + a.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============ UNIT SWITCH ============ */
+document.querySelectorAll('.unit-switch button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.unit-switch button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentUnit = b.dataset.unit;
+    const label = $('carbsLabel');
+    const portionLabel = $('portionLabel');
+    const portionHint = $('portionHint');
+    const unitHint = $('unitHint');
+    if (currentUnit === 'xe') {
+      label.textContent = 'Углеводов на 100 г (ХЕ)';
+      portionLabel.textContent = 'Масса порции (г)';
+      portionHint.textContent = 'Расчёт: ХЕ × 12 г = углеводы в порции.';
+      unitHint.textContent = 'Вводите углеводы в ХЕ на 100 г. 1 ХЕ = 12 г.';
+      $('carbsPer100').value = (50 / XE_GRAMS).toFixed(2);
+    } else {
+      label.textContent = 'Углеводов на 100 г (г)';
+      portionLabel.textContent = 'Сколько наложил(а) в тарелку (г)';
+      portionHint.textContent = 'По этому весу считается доза.';
+      unitHint.textContent = 'Вводите углеводы в граммах. 1 ХЕ ≈ 12 г углеводов.';
+      $('carbsPer100').value = 50;
+    }
+  });
+});
+
+/* ============ CHIPS ============ */
+document.querySelectorAll('#productChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#productChips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const carbs = parseFloat(chip.dataset.carbs);
+    $('carbsPer100').value = currentUnit === 'xe' ? (carbs / XE_GRAMS).toFixed(2) : carbs;
+    chip.animate(
+      [{transform:'scale(1)'}, {transform:'scale(1.1)'}, {transform:'scale(1)'}],
+      {duration: 250}
+    );
+  });
+});
+
+/* ============ PRESETS ============ */
+const presetsEl = $('presets');
+PRESETS.forEach(p => {
+  const el = document.createElement('div');
+  el.className = 'preset';
+  el.innerHTML = `<span class="emoji">${p.e}</span><span class="name">${p.n}</span><span class="kcal">${p.carbs}г углев.</span>`;
+  el.addEventListener('click', () => {
+    $('carbsPer100').value = currentUnit === 'xe' ? (p.carbs / XE_GRAMS).toFixed(2) : p.carbs;
+    document.querySelectorAll('#productChips .chip').forEach(c => c.classList.remove('active'));
+    showSnackbar(`Пресет "${p.n}" применён`);
+    el.animate(
+      [{transform:'scale(1)'}, {transform:'scale(0.95)'}, {transform:'scale(1)'}],
+      {duration: 200}
+    );
+  });
+  presetsEl.appendChild(el);
+});
+
+/* ============ PRODUCT DB ============ */
+function renderProducts(filter='') {
+  const list = $('productList');
+  const f = filter.toLowerCase().trim();
+  const filtered = PRODUCTS_DB.filter(p => p.n.toLowerCase().includes(f) || p.cat.toLowerCase().includes(f));
+  if (!filtered.length) {
+    list.innerHTML = `<div class="history-empty"><i>search_off</i><div>Ничего не найдено</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(p => `
+    <div class="product-item" data-carbs="${p.c}">
+      <span class="emoji">${p.e}</span>
+      <div class="info">
+        <div class="name">${p.n}</div>
+        <div class="sub">${p.cat}</div>
+      </div>
+      <div class="carbs">${p.c}г</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.product-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const c = parseFloat(item.dataset.carbs);
+      $('carbsPer100').value = currentUnit === 'xe' ? (c / XE_GRAMS).toFixed(2) : c;
+      document.querySelectorAll('#productChips .chip').forEach(x => x.classList.remove('active'));
+      document.querySelector('nav.tabbed a[data-tab="calc"]').click();
+      showSnackbar(`Выбрано: ${item.querySelector('.name').textContent}`);
+    });
+  });
+}
+renderProducts();
+$('dbSearch').addEventListener('input', e => renderProducts(e.target.value));
+
+/* ============ CALC ============ */
+$('calcBtn').addEventListener('click', () => {
+  let carbsPer100 = parseFloat($('carbsPer100').value) || 0;
+  const portion = parseFloat($('portionWeight').value) || 0;
+  const factor = parseFloat($('carbFactor').value) || 10;
+  const currentSugar = parseFloat($('currentSugar').value);
+  const targetSugar = parseFloat($('targetSugar').value) || 6;
+  const sensitivity = parseFloat($('sensitivity').value) || 3;
+
+  if (portion <= 0) { showSnackbar('Введите массу порции', 'warning'); return; }
+  if (factor <= 0) { showSnackbar('УК должен быть > 0', 'warning'); return; }
+
+  // Переводим в граммы если режим ХЕ
+  let carbsPer100g = currentUnit === 'xe' ? carbsPer100 * XE_GRAMS : carbsPer100;
+  const carbsInPortion = (carbsPer100g * portion) / 100;
+  const unitsFromCarbs = carbsInPortion / factor;
+
+  // Коррекция по сахару
+  let correction = 0;
+  let correctionBlock = '';
+  if (!isNaN(currentSugar)) {
+    const diff = currentSugar - targetSugar;
+    correction = diff / sensitivity;
+    if (Math.abs(correction) > 0.01) {
+      const sign = correction > 0 ? '+' : '';
+      correctionBlock = `
+        <div><b>Коррекция по сахару:</b></div>
+        <div>Текущий: <b>${currentSugar.toFixed(1)}</b> → целевой: <b>${targetSugar.toFixed(1)}</b> ммоль/л</div>
+        <div>Разница: <b>${sign}${diff.toFixed(1)}</b> ммоль/л · КС: <b>${sensitivity}</b></div>
+        <div>Коррекция: <b>${sign}${correction.toFixed(2)} ед.</b></div>
+      `;
+    }
+  }
+
+  const totalUnits = Math.max(0, unitsFromCarbs + correction);
+  const ml = totalUnits * 0.1;
+  const xe = carbsInPortion / XE_GRAMS;
+
+  lastResult = {
+    dose_ml: ml,
+    units: totalUnits,
+    carbs: carbsInPortion,
+    xe: xe,
+    portion: portion,
+    carbsPer100: carbsPer100g,
+    factor: factor,
+    correction: correction,
+    currentSugar: isNaN(currentSugar) ? null : currentSugar,
+    ts: Date.now()
+  };
+
+  $('resultCard').classList.remove('hidden');
+  animateValue($('doseValue'), 0, ml, 500, 2);
+  animateValue($('unitsValue'), 0, totalUnits, 500, 1);
+  animateValue($('carbsValue'), 0, carbsInPortion, 500, 1);
+  animateValue($('xeValue'), 0, xe, 500, 2);
+
+  if (correctionBlock) {
+    $('correctionBlock').innerHTML = correctionBlock;
+    $('correctionBlock').style.display = 'block';
+  } else {
+    $('correctionBlock').style.display = 'none';
+  }
+
+  // Сохраняем в историю
+  saveToHistory();
+
+  setTimeout(() => {
+    $('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+});
+
+/* ============ HISTORY ============ */
+function saveToHistory() {
+  if (!lastResult) return;
+  history.unshift({
+    ...lastResult,
+    id: Date.now() + Math.random()
+  });
+  if (history.length > 50) history = history.slice(0, 50);
+  localStorage.setItem('auraDiabet_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = $('historyList');
+  const clearBtn = $('clearHistory');
+  if (!history.length) {
+    list.innerHTML = `<div class="history-empty"><i>history</i><div>История пуста</div><div style="font-size:11px;margin-top:4px;">Ваши расчёты будут здесь</div></div>`;
+    clearBtn.style.display = 'none';
+    return;
+  }
+  clearBtn.style.display = 'block';
+  list.innerHTML = history.map((h, i) => {
+    const d = new Date(h.ts);
+    const date = d.toLocaleDateString('ru-RU', {day:'2-digit', month:'short'});
+    const time = d.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    const sugarInfo = h.currentSugar ? ` · сахар ${h.currentSugar}` : '';
+    return `
+      <div class="history-item" style="animation-delay:${i*0.03}s">
+        <div class="dose-badge">
+          ${h.dose_ml.toFixed(1)}
+          <small>мл</small>
+        </div>
+        <div class="info">
+          <div class="title">${h.carbs.toFixed(1)} г углев · ${h.units.toFixed(1)} ед</div>
+          <div class="meta">${date}, ${time}${sugarInfo} · порт. ${h.portion}г</div>
+        </div>
+        <button class="del" data-id="${h.id}" title="Удалить"><i>delete</i></button>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.del').forEach(b => {
+    b.addEventListener('click', () => {
+      const id = parseFloat(b.dataset.id);
+      history = history.filter(h => h.id !== id);
+      localStorage.setItem('auraDiabet_history', JSON.stringify(history));
+      renderHistory();
+      showSnackbar('Запись удалена', 'delete');
+    });
+  });
+}
+renderHistory();
+
+$('clearHistory').addEventListener('click', () => {
+  if (confirm('Очистить всю историю?')) {
+    history = [];
+    localStorage.setItem('auraDiabet_history', JSON.stringify(history));
+    renderHistory();
+    showSnackbar('История очищена', 'delete_sweep');
+  }
+});
+
+/* ============ SHARE ============ */
+$('shareBtn').addEventListener('click', async () => {
+  if (!lastResult) return;
+  const r = lastResult;
+  const text = `💉 auraDiabet — расчёт дозы
+━━━━━━━━━━━━━━━━
+🎯 Доза: ${r.dose_ml.toFixed(2)} мл (${r.units.toFixed(1)} ед.)
+🍞 Углеводы: ${r.carbs.toFixed(1)} г (${r.xe.toFixed(2)} ХЕ)
+⚖️ Порция: ${r.portion} г
+📊 УК: 1 ед. на ${r.factor} г${r.currentSugar ? `
+🩸 Сахар: ${r.currentSugar} ммоль/л
+➕ Коррекция: ${r.correction >= 0 ? '+' : ''}${r.correction.toFixed(2)} ед.` : ''}
+━━━━━━━━━━━━━━━━
+🔗 Рассчитано в https://theaurasquad.github.io/auradiabet.html`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({title:'auraDiabet', text});
+      showSnackbar('Отправлено!');
+    } catch(e) { /* cancelled */ }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSnackbar('Скопировано в буфер обмена');
+    } catch(e) {
+      showSnackbar('Не удалось скопировать', 'error');
+    }
+  }
+});
+
+/* ============ ONLINE STATUS ============ */
+function updateStatus() {
+  const el = $('statusText');
+  const dot = document.querySelector('.online-badge .dot');
+  if (navigator.onLine) {
+    el.textContent = 'online';
+    dot.style.background = 'var(--success)';
+    dot.style.boxShadow = '0 0 8px var(--success)';
+  } else {
+    el.textContent = 'offline';
+    dot.style.background = 'var(--warning)';
+    dot.style.boxShadow = '0 0 8px var(--warning)';
+  }
+}
+window.addEventListener('online', updateStatus);
+window.addEventListener('offline', updateStatus);
+updateStatus();
+
+/* ============ SERVICE WORKER (OFFLINE) ============ */
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'auradiabet-v1';
+    const ASSETS = [self.location.href.replace(/\\/sw\\.js$/, '/'), './'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
+          const copy = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
+          return resp;
+        }).catch(() => caches.match('./')))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+
+</body>
+</html>
