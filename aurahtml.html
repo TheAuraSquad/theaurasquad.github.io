@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#201710">
+  <title>auraHtml</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.css" rel="stylesheet">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.js"></script>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
+
+  <!-- Prism.js для подсветки -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-html.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/3.2.5/standalone.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/3.2.5/parser-html.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/diff2html/3.4.48/diff2html.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff2html/3.4.48/diff2html-ui.min.js"></script>
+
+  <style>
+    :root {
+        --aura-bg: #201710;
+        --aura-surface: #2a1f15;
+        --aura-accent: #eeb276;
+        --aura-text: #eeb276;
+        --aura-input-bg: #150f0a;
+    }
+    
+    * { box-sizing: border-box; font-family: 'Unbounded', sans-serif !important; }
+    
+    body {
+        background-color: var(--aura-bg) !important;
+        color: var(--aura-text) !important;
+        margin: 0; padding: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    
+    main {
+        background-color: var(--aura-bg) !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* Шапка */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0.5rem;
+        background: var(--aura-surface);
+        border-bottom: 1px solid var(--aura-accent);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        gap: 0.5rem;
+    }
+    
+    .top-bar h5 {
+        margin: 0;
+        color: var(--aura-text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .top-bar .emoji { font-size: 1.3rem; flex-shrink: 0; }
+    
+    .header-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-shrink: 0;
+    }
+    
+    .icon-btn {
+        width: 40px; height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-accent);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        transition: all 0.2s;
+    }
+    
+    .icon-btn:active {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    /* Статус бар */
+    .status-bar {
+        background: var(--aura-surface);
+        border-top: 1px solid var(--aura-accent);
+        padding: 0.4rem 0.75rem;
+        font-size: 0.7rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        bottom: 0;
+        z-index: 50;
+    }
+    
+    .status-bar .emoji { margin-right: 0.3rem; }
+    
+    /* Вкладки файлов */
+    .tabs-container {
+        display: flex;
+        overflow-x: auto;
+        background: var(--aura-surface);
+        border-bottom: 1px solid rgba(238, 178, 118, 0.3);
+        padding: 0.25rem;
+        gap: 0.25rem;
+        margin: 0.5rem 0;
+    }
+    
+    .file-tab {
+        padding: 0.5rem 0.75rem;
+        background: transparent;
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    
+    .file-tab.active {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    .file-tab:hover:not(.active) {
+        background: rgba(238, 178, 118, 0.1);
+    }
+    
+    .file-tab .close-tab {
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.7;
+        line-height: 1;
+    }
+    
+    .file-tab .close-tab:hover { opacity: 1; }
+    
+    .add-tab-btn {
+        padding: 0.5rem 0.75rem;
+        background: transparent;
+        border: 1px dashed var(--aura-accent);
+        color: var(--aura-accent);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    /* CodeMirror - ИСПРАВЛЕНО */
+    .CodeMirror {
+        height: auto !important;
+        min-height: 250px;
+        max-height: 50vh;
+        background: var(--aura-input-bg) !important;
+        color: var(--aura-text) !important;
+        border: 1px solid var(--aura-accent);
+        border-radius: 8px;
+        font-family: 'Courier New', monospace !important;
+        font-size: 13px;
+        overflow: auto !important; /* Включаем скролл */
+    }
+    
+    .CodeMirror-scroll {
+        overflow: auto !important;
+        max-height: 50vh;
+    }
+    
+    .CodeMirror-gutters {
+        background: var(--aura-bg) !important;
+        border-right: 1px solid rgba(238, 178, 118, 0.2) !important;
+    }
+    
+    .CodeMirror-linenumber { color: rgba(238, 178, 118, 0.5) !important; }
+    .CodeMirror-cursor { border-left-color: var(--aura-accent) !important; }
+    .CodeMirror-selected { background: rgba(238, 178, 118, 0.3) !important; }
+    
+    /* Кнопки управления */
+    .controls-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .control-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.75rem 0.5rem;
+        background: var(--aura-surface);
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.7rem;
+        transition: all 0.2s;
+        min-height: 48px;
+        text-align: center;
+    }
+    
+    .control-btn:active {
+        transform: scale(0.98);
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    .control-btn.primary {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+        font-weight: 600;
+        grid-column: 1 / -1;
+    }
+    
+    .control-btn .emoji { font-size: 1.2rem; line-height: 1; }
+    
+    @media (max-width: 380px) {
+        .control-btn .btn-text { display: none; }
+        .control-btn { padding: 1rem 0.5rem; }
+    }
+    
+    /* Drag & Drop зона */
+    .drop-zone {
+        border: 2px dashed var(--aura-accent);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        margin: 0.5rem 0;
+        display: none;
+        background: rgba(238, 178, 118, 0.05);
+    }
+    
+    .drop-zone.active { display: block; }
+    .drop-zone.drag-over {
+        background: rgba(238, 178, 118, 0.2);
+        border-color: var(--aura-text);
+    }
+    
+    /* Split View */
+    .split-container {
+        display: none;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .split-container.active { display: grid; }
+    
+    .split-editor, .split-preview {
+        border: 1px solid var(--aura-accent);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .split-preview iframe {
+        width: 100%; height: 250px;
+        border: none; background: white;
+    }
+    
+    /* Консоль */
+    .console-container {
+        display: none;
+        background: var(--aura-input-bg);
+        border: 1px solid var(--aura-accent);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 11px;
+    }
+    
+    .console-container.active { display: block; }
+    .console-log { color: var(--aura-text); }
+    .console-error { color: #ff6b6b; }
+    .console-warn { color: #ffd93d; }
+    
+    /* AI Chat */
+    .ai-chat-container {
+        display: none;
+        background: var(--aura-surface);
+        border: 1px solid var(--aura-accent);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .ai-chat-container.active { display: block; }
+    
+    .ai-messages {
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+    }
+    
+    .ai-message {
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        word-wrap: break-word;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .ai-message.user {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+        margin-left: 2rem;
+    }
+    
+    .ai-message.ai {
+        background: var(--aura-input-bg);
+        color: var(--aura-text);
+        margin-right: 0.5rem;
+    }
+    
+    /* Карточки с кодом от AI - С ПОДСВЕТКОЙ */
+    .ai-code-card {
+        background: #0a0604;
+        border: 1px solid var(--aura-accent);
+        border-radius: 8px;
+        margin: 0.75rem 0;
+        overflow: hidden;
+    }
+    
+    .ai-code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        background: var(--aura-surface);
+        border-bottom: 1px solid var(--aura-accent);
+        font-size: 0.7rem;
+    }
+    
+    .ai-code-buttons {
+        display: flex;
+        gap: 0.25rem;
+    }
+    
+    .ai-code-btn {
+        padding: 0.25rem 0.5rem;
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .ai-code-btn:active { opacity: 0.8; }
+    .ai-code-btn.replace { background: #ff6b6b; }
+    
+    .ai-code-content {
+        margin: 0;
+        padding: 0.75rem;
+        overflow-x: auto;
+        max-height: 400px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        background: #1a1a2e;
+    }
+    
+    .ai-code-content code {
+        display: block;
+        white-space: pre;
+    }
+    
+    .ai-text-block {
+        margin: 0.5rem 0;
+        padding: 0.5rem;
+        line-height: 1.5;
+    }
+    
+    .ai-input-container {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .ai-input-container input {
+        flex: 1;
+        background: var(--aura-input-bg);
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        min-width: 0;
+    }
+    
+    /* Загрузка сайта */
+    .url-load-container {
+        display: flex;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+    }
+    
+    .url-load-container input {
+        flex: 1;
+        background: var(--aura-input-bg);
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+    
+    /* Оверлей предпросмотра */
+    #previewOverlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(32, 23, 16, 0.98);
+        z-index: 9999;
+        flex-direction: column;
+    }
+    
+    #previewOverlay.active { display: flex; }
+    
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--aura-surface);
+        border-bottom: 1px solid var(--aura-accent);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .preview-header h6 {
+        margin: 0;
+        color: var(--aura-text);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .device-selector { display: flex; gap: 0.25rem; }
+    
+    .device-btn {
+        padding: 0.35rem 0.6rem;
+        background: transparent;
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.7rem;
+    }
+    
+    .device-btn.active {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    #previewContainer {
+        flex: 1;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 0.5rem;
+        overflow: auto;
+    }
+    
+    #previewFrame {
+        border: none;
+        background: white;
+        border-radius: 8px;
+        width: 100%;
+        height: 100%;
+        transition: width 0.3s, height 0.3s;
+    }
+    
+    .close-preview-btn {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+        border: none;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    
+    /* Диалоги */
+    dialog {
+        background: var(--aura-surface);
+        color: var(--aura-text);
+        border: 1px solid var(--aura-accent);
+        border-radius: 12px;
+        padding: 0;
+        max-width: 90vw;
+        width: 320px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    dialog::backdrop {
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+    }
+    
+    dialog article { padding: 1.25rem; }
+    
+    dialog h5 {
+        margin-top: 0;
+        color: var(--aura-accent);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .field { margin: 0.75rem 0; }
+    
+    .field label {
+        color: var(--aura-accent);
+        font-size: 0.75rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+    
+    .field input, .field select, .field textarea {
+        background: var(--aura-input-bg);
+        border: 1px solid var(--aura-accent);
+        color: var(--aura-text);
+        padding: 0.6rem;
+        border-radius: 6px;
+        width: 100%;
+        font-size: 0.85rem;
+    }
+    
+    dialog nav {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 1rem;
+    }
+    
+    dialog button {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid var(--aura-accent);
+        background: transparent;
+        color: var(--aura-text);
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    
+    dialog button.primary {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    /* Сниппеты */
+    .snippets-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+    }
+    
+    .snippet-card {
+        padding: 0.6rem;
+        background: var(--aura-input-bg);
+        border: 1px solid var(--aura-accent);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+    
+    .snippet-card:active {
+        background: var(--aura-accent);
+        color: var(--aura-bg);
+    }
+    
+    .version-list { max-height: 250px; overflow-y: auto; }
+    
+    .version-item {
+        padding: 0.6rem;
+        border-bottom: 1px solid rgba(238, 178, 118, 0.2);
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+    
+    .version-item:active { background: var(--aura-input-bg); }
+    
+    /* Toast */
+    .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--aura-surface);
+        color: var(--aura-text);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        border: 1px solid var(--aura-accent);
+        z-index: 10000;
+        font-size: 0.8rem;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 90%;
+        text-align: center;
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translate(-50%, 20px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    
+    .footer {
+        text-align: center;
+        padding: 1rem 0.5rem;
+        color: var(--aura-accent);
+        font-size: 0.7rem;
+        opacity: 0.8;
+        border-top: 1px solid rgba(238, 178, 118, 0.2);
+        margin-top: 1rem;
+    }
+    
+    /* Полноэкранный режим */
+    .fullscreen-mode .top-bar,
+    .fullscreen-mode .tabs-container,
+    .fullscreen-mode .controls-grid,
+    .fullscreen-mode .footer,
+    .fullscreen-mode .status-bar {
+        display: none;
+    }
+    
+    .fullscreen-mode .CodeMirror {
+        min-height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    /* Десктоп */
+    @media (min-width: 768px) {
+        main {
+            padding: 1.5rem !important;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+    
+        .top-bar {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+    
+        .top-bar h5 { font-size: 1.3rem; }
+    
+        .controls-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+    
+        .control-btn {
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+    
+        .CodeMirror {
+            min-height: 400px;
+            max-height: 60vh;
+        }
+    
+        .split-container.active { grid-template-columns: 1fr 1fr; }
+        .split-preview iframe { height: 400px; }
+    
+        dialog { width: 420px; }
+    
+        .snippets-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    
+    .diff-container {
+        max-height: 300px;
+        overflow-y: auto;
+        margin: 0.75rem 0;
+        font-size: 0.75rem;
+    }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--aura-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--aura-accent); border-radius: 3px; }
+    
+    .ai-message.ai strong { color: var(--aura-accent); font-weight: 700; }
+    .ai-message.ai code:not([class*="language"]) {
+        background: var(--aura-surface);
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+    }
+    
+    /* Мини-карта (упрощенная) */
+    .minimap {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 100px;
+        height: 100%;
+        background: rgba(238, 178, 118, 0.05);
+        border-left: 1px solid var(--aura-accent);
+        overflow: hidden;
+        font-size: 2px;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main>
+    <!-- Шапка -->
+    <div class="top-bar">
+      <h5><span class="emoji">💻</span> auraHtml</h5>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="toggleFullscreen()" title="Полноэкранный"></button>
+        <button class="icon-btn" onclick="openDialog('settingsDialog')" title="Настройки">⚙️</button>
+        <button class="icon-btn" onclick="toggleAIChat()" title="AI">🤖</button>
+      </div>
+    </div>
+
+    <!-- Drag & Drop зона -->
+    <div class="drop-zone" id="dropZone">
+      <div class="emoji" style="font-size: 3rem; margin-bottom: 0.5rem;">📁</div>
+      <div>Перетащите файлы сюда</div>
+      <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 0.5rem;">или HTML, CSS, JS файлы</div>
+    </div>
+
+    <!-- Загрузка с URL -->
+    <div class="url-load-container">
+      <input type="url" id="urlInput" placeholder="https://example.com (загрузить HTML с сайта)">
+      <button class="control-btn" onclick="loadFromURL()" style="min-height: auto; padding: 0.75rem 1rem;">
+        <span class="emoji">🌐</span>
+        <span class="btn-text">Загрузить</span>
+      </button>
+    </div>
+
+    <!-- Вкладки файлов -->
+    <div class="tabs-container" id="tabsContainer">
+      <button class="file-tab active" onclick="switchTab(0)">
+        <span>index.html</span>
+        <span class="close-tab" onclick="event.stopPropagation(); closeTab(0)">×</span>
+      </button>
+      <button class="add-tab-btn" onclick="addNewFile()">+</button>
+    </div>
+
+    <div style="margin: 0.5rem 0; position: relative;">
+      <textarea id="codeEditor"></textarea>
+      <div class="minimap" id="minimap"></div>
+    </div>
+
+    <!-- Split View -->
+    <div class="split-container" id="splitContainer">
+      <div class="split-editor">
+        <div style="padding: 0.5rem; background: var(--aura-surface); font-size: 0.75rem;">📝 Редактор</div>
+        <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: var(--aura-accent); font-size: 0.8rem;">
+          Split View активен
+        </div>
+      </div>
+      <div class="split-preview">
+        <div style="padding: 0.5rem; background: var(--aura-surface); font-size: 0.75rem;">👁️ Предпросмотр</div>
+        <iframe id="splitPreviewFrame"></iframe>
+      </div>
+    </div>
+
+    <!-- Консоль -->
+    <div class="console-container" id="consoleContainer">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-weight: 600; font-size: 0.85rem;">🖥️ Консоль</span>
+        <button onclick="clearConsole()" style="background: transparent; border: 1px solid var(--aura-accent); color: var(--aura-accent); padding: 0.25rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">Очистить</button>
+      </div>
+      <div id="consoleOutput"></div>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="ai-chat-container" id="aiChatContainer">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-weight: 600; font-size: 0.9rem;">🤖 AI Ассистент</span>
+        <button onclick="toggleAIChat()" style="background: transparent; border: 1px solid var(--aura-accent); color: var(--aura-accent); padding: 0.25rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem;">Закрыть</button>
+      </div>
+
+      <div style="display: flex; gap: 0.25rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+        <button class="snippet-card" style="padding: 0.3rem 0.5rem; margin: 0; font-size: 0.65rem;" onclick="insertAIQuickPrompt('Объясни этот код')"> Объясни</button>
+        <button class="snippet-card" style="padding: 0.3rem 0.5rem; margin: 0; font-size: 0.65rem;" onclick="insertAIQuickPrompt('Исправь ошибки')">🔧 Исправь</button>
+        <button class="snippet-card" style="padding: 0.3rem 0.5rem; margin: 0; font-size: 0.65rem;" onclick="insertAIQuickPrompt('Оптимизируй код')">⚡ Оптимизируй</button>
+        <button class="snippet-card" style="padding: 0.3rem 0.5rem; margin: 0; font-size: 0.65rem;" onclick="insertAIQuickPrompt('Добавь комментарии')">📝 Комментарии</button>
+      </div>
+
+      <div class="ai-messages" id="aiMessages">
+        <div class="ai-message ai">
+          👋 Привет! Я AI-ассистент. Задай вопрос или попроси написать код. Код будет оформлен в карточки с подсветкой синтаксиса.
+        </div>
+      </div>
+
+      <div class="ai-input-container">
+        <input type="text" id="aiInput" placeholder="Спроси AI..." onkeypress="if(event.key==='Enter')sendAIMessage()">
+        <button onclick="sendAIMessage()" class="control-btn primary" style="padding: 0.6rem 0.8rem; min-height: auto;">
+          <span class="emoji"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Кнопки управления -->
+    <div class="controls-grid">
+      <button class="control-btn" onclick="document.getElementById('fileInput').click()">
+        <span class="emoji">📁</span>
+        <span class="btn-text">Загрузить</span>
+      </button>
+      <input type="file" id="fileInput" accept=".html,.htm,.css,.js,.txt" multiple style="display: none;">
+
+      <button class="control-btn" onclick="openDialog('downloadDialog')">
+        <span class="emoji">💾</span>
+        <span class="btn-text">Скачать</span>
+      </button>
+
+      <button class="control-btn" onclick="exportAllToZIP()">
+        <span class="emoji">📦</span>
+        <span class="btn-text">ZIP все</span>
+      </button>
+
+      <button class="control-btn" onclick="clearCode()">
+        <span class="emoji">🗑️</span>
+        <span class="btn-text">Очистить</span>
+      </button>
+
+      <button class="control-btn" onclick="copyCode()">
+        <span class="emoji">📋</span>
+        <span class="btn-text">Копировать</span>
+      </button>
+
+      <button class="control-btn" onclick="formatCode()">
+        <span class="emoji">🎨</span>
+        <span class="btn-text">Формат</span>
+      </button>
+
+      <button class="control-btn" onclick="minifyCode()">
+        <span class="emoji"></span>
+        <span class="btn-text">Минификация</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('templatesDialog')">
+        <span class="emoji">📄</span>
+        <span class="btn-text">Шаблоны</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('snippetsDialog')">
+        <span class="emoji">✂️</span>
+        <span class="btn-text">Сниппеты</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('cdnDialog')">
+        <span class="emoji">🔗</span>
+        <span class="btn-text">CDN</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('historyDialog')">
+        <span class="emoji"></span>
+        <span class="btn-text">История</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('diffDialog')">
+        <span class="emoji">🔀</span>
+        <span class="btn-text">Сравнить</span>
+      </button>
+
+      <button class="control-btn" onclick="toggleSplitView()">
+        <span class="emoji">📐</span>
+        <span class="btn-text">Split View</span>
+      </button>
+
+      <button class="control-btn" onclick="toggleConsole()">
+        <span class="emoji">️</span>
+        <span class="btn-text">Консоль</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('exportDialog')">
+        <span class="emoji">📕</span>
+        <span class="btn-text">PDF</span>
+      </button>
+
+      <button class="control-btn" onclick="screenshotPreview()">
+        <span class="emoji">📸</span>
+        <span class="btn-text">Скриншот</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('validateDialog')">
+        <span class="emoji">✅</span>
+        <span class="btn-text">Валидация</span>
+      </button>
+
+      <button class="control-btn" onclick="openDialog('deployDialog')">
+        <span class="emoji">🚀</span>
+        <span class="btn-text">Деплой</span>
+      </button>
+
+      <button class="control-btn primary" onclick="openPreview()">
+        <span class="emoji">️</span>
+        <span class="btn-text">Предпросмотр</span>
+      </button>
+    </div>
+
+    <div class="footer">
+      Создано в экосистеме aura* | auraSquad © 2026
+    </div>
+
+    <!-- Статус бар -->
+    <div class="status-bar">
+      <div>
+        <span class="emoji">📊</span>
+        <span id="statusInfo">Строк: 0 | Символов: 0</span>
+      </div>
+      <div>
+        <span class="emoji">💾</span>
+        <span id="saveStatus">Сохранено</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Диалоги (остаются такими же, только добавил экспорт ZIP) -->
+  <dialog id="settingsDialog">
+    <article>
+      <h5><span class="emoji">️</span> Настройки</h5>
+      <div class="field">
+        <label>Размер шрифта: <span id="fontSizeValue">13</span>px</label>
+        <input type="range" id="fontSizeInput" min="10" max="24" value="13" oninput="updateFontSize(this.value)">
+      </div>
+      <div class="field">
+        <label>Автосохранение (мин)</label>
+        <input type="number" id="autosaveInterval" value="5" min="1" max="30">
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="autosaveToggle" checked> Автосохранение</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="liveReloadToggle" checked> Live Reload</label>
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="minimapToggle"> Мини-карта</label>
+      </div>
+      <nav><button onclick="closeDialog('settingsDialog')">Закрыть</button></nav>
+    </article>
+  </dialog>
+
+  <dialog id="downloadDialog">
+    <article>
+      <h5><span class="emoji">💾</span> Скачать</h5>
+      <div class="field">
+        <label>Имя файла</label>
+        <input type="text" id="filenameInput" value="index.html">
+      </div>
+      <nav>
+        <button onclick="closeDialog('downloadDialog')">Отмена</button>
+        <button class="primary" onclick="downloadCode()">Скачать</button>
+      </nav>
+    </article>
+  </dialog>
+
+  <dialog id="templatesDialog">
+    <article>
+      <h5><span class="emoji">📄</span> Шаблоны</h5>
+      <div class="snippets-grid">
+        <div class="snippet-card" onclick="loadTemplate('html5')">HTML5</div>
+        <div class="snippet-card" onclick="loadTemplate('beercss')">BeerCSS</div>
+        <div class="snippet-card" onclick="loadTemplate('flexbox')">Flexbox</div>
+        <div class="snippet-card" onclick="loadTemplate('grid')">Grid</div>
+        <div class="snippet-card" onclick="loadTemplate('form')">Форма</div>
+        <div class="snippet-card" onclick="loadTemplate('table')">Таблица</div>
+      </div>
+      <nav><button onclick="closeDialog('templatesDialog')">Закрыть</button></nav>
+    </article>
+  </dialog>
+
+  <dialog id="snippetsDialog">
+    <article>
+      <h5><span class="emoji">️</span> Сниппеты</h5>
+      <div class="snippets-grid">
+        <div class="snippet-card" onclick="insertSnippet('div')">div</div>
+        <div class="snippet-card" onclick="insertSnippet('img')">img</div>
+        <div class="snippet-card" onclick="insertSnippet('a')">ссылка</div>
+        <div class="snippet-card" onclick="insertSnippet('ul')">ul > li</div>
+        <div class="snippet-card" onclick="insertSnippet('form')">form</div>
+        <div class="snippet-card" onclick="insertSnippet('table')">table</div>
+      </div>
+      <nav><button onclick="closeDialog('snippetsDialog')">Закрыть</button></nav>
+    </article>
+  </dialog>
+
+  <dialog id="cdnDialog">
+    <article>
+      <h5><span class="emoji"></span> CDN</h5>
+      <div class="field">
+        <label>Библиотека</label>
+        <select id="cdnSelect">
+          <option value="beercss">BeerCSS</option>
+          <option value="bootstrap">Bootstrap 5</option>
+          <option value="tailwind">Tailwind CSS</option>
+          <option value="jquery">jQuery</option>
+          <option value="vue">Vue 3</option>
+          <option value="react">React</option>
+          <option value="axios">Axios</option>
+          <option value="lodash">Lodash</option>
+        </select>
+      </div>
+      <nav>
+        <button onclick="closeDialog('cdnDialog')">Отмена</button>
+        <button class="primary" onclick="addCDN()">Добавить</button>
+      </nav>
+    </article>
+  </dialog>
+
+  <dialog id="historyDialog">
+    <article>
+      <h5><span class="emoji">🕐</span> История</h5>
+      <div class="version-list" id="versionList"></div>
+      <nav><button onclick="closeDialog('historyDialog')">Закрыть</button></nav>
+    </article>
+  </dialog>
+
+  <dialog id="diffDialog">
+    <article>
+      <h5><span class="emoji">🔀</span> Сравнение</h5>
+      <div class="field">
+        <label>Версия 1</label>
+        <select id="diffVersion1"></select>
+      </div>
+      <div class="field">
+        <label>Версия 2</label>
+        <select id="diffVersion2"></select>
+      </div>
+      <div class="diff-container" id="diffOutput"></div>
+      <nav>
+        <button onclick="closeDialog('diffDialog')">Закрыть</button>
+        <button class="primary" onclick="showDiff()">Сравнить</button>
+      </nav>
+    </article>
+  </dialog>
+
+  <dialog id="exportDialog">
+    <article>
+      <h5><span class="emoji">📕</span> PDF</h5>
+      <p style="font-size: 0.8rem;">Экспорт предпросмотра в PDF</p>
+      <nav>
+        <button onclick="closeDialog('exportDialog')">Отмена</button>
+        <button class="primary" onclick="exportPDF()">Экспорт</button>
+      </nav>
+    </article>
+  </dialog>
+
+  <dialog id="validateDialog">
+    <article>
+      <h5><span class="emoji">✅</span> Валидация</h5>
+      <div id="validationOutput" style="font-size: 0.8rem; margin: 0.75rem 0;"></div>
+      <nav>
+        <button onclick="closeDialog('validateDialog')">Закрыть</button>
+        <button class="primary" onclick="validateCode()">Проверить</button>
+      </nav>
+    </article>
+  </dialog>
+
+  <dialog id="deployDialog">
+    <article>
+      <h5><span class="emoji">🚀</span> Деплой</h5>
+      <p style="font-size: 0.8rem;">Скачайте и загрузите на:</p>
+      <ul style="font-size: 0.8rem;">
+        <li>GitHub Pages</li>
+        <li>Netlify Drop</li>
+        <li>Vercel</li>
+        <li>Cloudflare Pages</li>
+      </ul>
+      <nav><button onclick="closeDialog('deployDialog')">Закрыть</button></nav>
+    </article>
+  </dialog>
+
+  <!-- Оверлей предпросмотра -->
+  <div id="previewOverlay">
+    <div class="preview-header">
+      <h6><span class="emoji">️</span> Предпросмотр</h6>
+      <div class="device-selector">
+        <button class="device-btn active" onclick="setDevice('100%', '100%', this)">💻</button>
+        <button class="device-btn" onclick="setDevice('375px', '667px', this)">📱</button>
+        <button class="device-btn" onclick="setDevice('768px', '1024px', this)">📟</button>
+      </div>
+      <button class="close-preview-btn" onclick="closePreview()"></button>
+    </div>
+    <div id="previewContainer">
+      <iframe id="previewFrame" allow="geolocation; microphone; camera; midi; encrypted-media; autoplay; picture-in-picture; fullscreen; usb; payment"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = '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';
+    const AI_MODEL = 'openai/gpt-oss-20b:free';
+    
+    let editor;
+    let files = [{ name: 'index.html', content: '' }];
+    let currentFileIndex = 0;
+    let versionHistory = [];
+    let aiHistory = [];
+    let autosaveInterval;
+    let updateStatusTimeout;
+    
+    // Инициализация
+    document.addEventListener('DOMContentLoaded', () => {
+        editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+            mode: 'htmlmixed',
+            theme: 'material-darker',
+            lineNumbers: true,
+            autoCloseTags: true,
+            autoCloseBrackets: true,
+            indentUnit: 2,
+            tabSize: 2,
+            lineWrapping: true,
+            lineNumbers: true,
+            extraKeys: {
+                'Ctrl-Space': 'autocomplete',
+                'Ctrl-F': 'findPersistent',
+                'Ctrl-H': 'replace',
+                'Ctrl-S': () => saveCurrentFile(),
+                'Ctrl-P': () => openPreview(),
+                'Ctrl-Shift-F': () => formatCode(),
+                'Ctrl-Shift-M': () => minifyCode(),
+                'F11': () => toggleFullscreen()
+            }
+        });
+    
+        // Drag & Drop
+        setupDragAndDrop();
+    
+        loadFromStorage();
+        startIntervals();
+        
+        editor.on('change', () => {
+            files[currentFileIndex].content = editor.getValue();
+            updateStatus();
+            if (document.getElementById('liveReloadToggle').checked) {
+                updateSplitPreview();
+            }
+            // Автосохранение с дебаунсом
+            clearTimeout(updateStatusTimeout);
+            updateStatusTimeout = setTimeout(() => saveCurrentFile(), 2000);
+        });
+    
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+        updateStatus();
+    });
+    
+    // Drag & Drop
+    function setupDragAndDrop() {
+        const dropZone = document.getElementById('dropZone');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+    
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    
+        document.body.addEventListener('dragenter', () => {
+            dropZone.classList.add('active');
+        });
+    
+        dropZone.addEventListener('dragover', () => {
+            dropZone.classList.add('drag-over');
+        });
+    
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+    
+        dropZone.addEventListener('drop', (e) => {
+            dropZone.classList.remove('drag-over');
+            dropZone.classList.remove('active');
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+    
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+            this.value = '';
+        });
+    }
+    
+    function handleFiles(fileList) {
+        Array.from(fileList).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['html', 'htm', 'css', 'js', 'txt'].includes(ext)) {
+                    files.push({ name: file.name, content: event.target.result });
+                    switchTab(files.length - 1);
+                    showToast('📁 ' + file.name);
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+    
+    // Загрузка с URL (через CORS proxy)
+    async function loadFromURL() {
+        const url = document.getElementById('urlInput').value.trim();
+        if (!url) {
+            showToast('️ Введите URL');
+            return;
+        }
+    
+        showToast(' Загрузка...');
+        
+        try {
+            // Пробуем через CORS proxy
+            const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            
+            if (data.contents) {
+                editor.setValue(data.contents);
+                saveCurrentFile();
+                showToast('✅ Сайт загружен');
+                document.getElementById('urlInput').value = '';
+            } else {
+                throw new Error('Нет содержимого');
+            }
+        } catch (error) {
+            // Fallback: показываем инструкцию
+            showToast('⚠️ CORS ограничение. Используйте расширение для браузера или скопируйте HTML вручную из DevTools (F12)');
+            console.error('Error loading URL:', error);
+        }
+    }
+    
+    function switchTab(index) {
+        files[currentFileIndex].content = editor.getValue();
+        currentFileIndex = index;
+        editor.setValue(files[index].content);
+        updateTabsUI();
+        updateStatus();
+    }
+    
+    function addNewFile() {
+        const name = prompt('Имя файла:', `file${files.length}.html`);
+        if (name) {
+            files.push({ name, content: '' });
+            switchTab(files.length - 1);
+            saveToStorage();
+        }
+    }
+    
+    function closeTab(index) {
+        if (files.length === 1) { showToast('Нельзя закрыть последний'); return; }
+        files.splice(index, 1);
+        if (currentFileIndex >= files.length) currentFileIndex = files.length - 1;
+        switchTab(currentFileIndex);
+        saveToStorage();
+    }
+    
+    function updateTabsUI() {
+        const container = document.getElementById('tabsContainer');
+        container.innerHTML = files.map((file, i) => `
+            <button class="file-tab ${i === currentFileIndex ? 'active' : ''}" onclick="switchTab(${i})" ondblclick="renameFile(${i})">
+                <span>${file.name}</span>
+                <span class="close-tab" onclick="event.stopPropagation(); closeTab(${i})">×</span>
+            </button>
+        `).join('') + '<button class="add-tab-btn" onclick="addNewFile()">+</button>';
+    }
+    
+    function renameFile(index) {
+        const newName = prompt('Новое имя файла:', files[index].name);
+        if (newName) {
+            files[index].name = newName;
+            updateTabsUI();
+            saveToStorage();
+        }
+    }
+    
+    function saveCurrentFile() {
+        files[currentFileIndex].content = editor.getValue();
+        saveToStorage();
+        saveVersion();
+        document.getElementById('saveStatus').textContent = 'Сохранено';
+        setTimeout(() => {
+            document.getElementById('saveStatus').textContent = 'Сохранено';
+        }, 2000);
+    }
+    
+    function updateStatus() {
+        const code = editor.getValue();
+        const lines = code.split('\n').length;
+        const chars = code.length;
+        document.getElementById('statusInfo').textContent = `Строк: ${lines} | Символов: ${chars} | Файл: ${files[currentFileIndex].name}`;
+        document.getElementById('saveStatus').textContent = 'Изменено';
+    }
+    
+    function downloadCode() {
+        const filename = document.getElementById('filenameInput').value.trim() || 'index.html';
+        const code = editor.getValue();
+        const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename.endsWith('.html') ? filename : filename + '.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        closeDialog('downloadDialog');
+        showToast('💾 Скачан: ' + a.download);
+    }
+    
+    // Экспорт всех файлов в ZIP
+    async function exportAllToZIP() {
+        const zip = new JSZip();
+        files.forEach(file => {
+            zip.file(file.name, file.content);
+        });
+        
+        const content = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'auraHtml-project.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('📦 ZIP создан');
+    }
+    
+    function clearCode() {
+        if (editor.getValue().trim() && confirm('Очистить код?')) {
+            editor.setValue('');
+            saveCurrentFile();
+            showToast('️ Очищено');
+        }
+    }
+    
+    async function copyCode() {
+        const code = editor.getValue();
+        if (!code.trim()) { showToast('Нечего копировать'); return; }
+        await navigator.clipboard.writeText(code);
+        showToast('📋 Скопировано');
+    }
+    
+    function formatCode() {
+        try {
+            const formatted = prettier.format(editor.getValue(), {
+                parser: 'html', plugins: prettierPlugins, tabWidth: 2
+            });
+            editor.setValue(formatted);
+            saveCurrentFile();
+            showToast(' Отформатировано');
+        } catch (e) { showToast('❌ Ошибка'); }
+    }
+    
+    function minifyCode() {
+        const code = editor.getValue();
+        const minified = code.replace(/\s+/g, ' ').replace(/>\s+</g, '><').replace(/\s*=\s*/g, '=').trim();
+        editor.setValue(minified);
+        saveCurrentFile();
+        showToast('📦 Минифицировано');
+    }
+    
+    const templates = {
+        html5: `<!DOCTYPE html>\n<html lang="ru">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>`,
+        beercss: `<!DOCTYPE html>\n<html lang="ru">\n<head>\n    <meta charset="UTF-8">\n    <title>BeerCSS</title>\n    <link href="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.css" rel="stylesheet">\n    <script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.js"><\/script>\n</head>\n<body class="dark">\n    <main class="responsive padding">\n        <h5>Hello BeerCSS!</h5>\n    </main>\n</body>\n</html>`,
+        flexbox: `<div style="display: flex; gap: 1rem; padding: 1rem;">\n    <div style="flex: 1; background: #eeb276; padding: 2rem;">1</div>\n    <div style="flex: 1; background: #eeb276; padding: 2rem;">2</div>\n    <div style="flex: 1; background: #eeb276; padding: 2rem;">3</div>\n</div>`,
+        grid: `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">\n    <div style="background: #eeb276; padding: 2rem;">1</div>\n    <div style="background: #eeb276; padding: 2rem;">2</div>\n    <div style="background: #eeb276; padding: 2rem;">3</div>\n</div>`,
+        form: `<form style="padding: 1rem; max-width: 400px;">\n    <label>Имя</label>\n    <input type="text" style="width: 100%; padding: 0.5rem;">\n    <label>Email</label>\n    <input type="email" style="width: 100%; padding: 0.5rem;">\n    <button type="submit" style="padding: 0.75rem 1.5rem; background: #eeb276;">Отправить</button>\n</form>`,
+        table: `<table style="width: 100%; border-collapse: collapse;">\n    <thead><tr style="background: #eeb276;">\n        <th style="padding: 0.75rem; border: 1px solid #201710;">Имя</th>\n        <th style="padding: 0.75rem; border: 1px solid #201710;">Email</th>\n    </tr></thead>\n    <tbody><tr>\n        <td style="padding: 0.75rem; border: 1px solid #201710;">Иван</td>\n        <td style="padding: 0.75rem; border: 1px solid #201710;">ivan@test.com</td>\n    </tr></tbody>\n</table>`
+    };
+    
+    function loadTemplate(name) {
+        if (confirm('Загрузить шаблон?')) {
+            editor.setValue(templates[name]);
+            saveCurrentFile();
+            closeDialog('templatesDialog');
+            showToast('📄 Шаблон загружен');
+        }
+    }
+    
+    const snippets = {
+        div: '<div>\n    \n</div>',
+        img: '<img src="" alt="">',
+        a: '<a href="">Ссылка</a>',
+        ul: '<ul>\n    <li>1</li>\n    <li>2</li>\n</ul>',
+        form: '<form>\n    <input type="text">\n    <button>Отправить</button>\n</form>',
+        table: '<table>\n    <tr><th>Заголовок</th></tr>\n    <tr><td>Ячейка</td></tr>\n</table>'
+    };
+    
+    function insertSnippet(name) {
+        const doc = editor.getDoc();
+        doc.replaceRange(snippets[name], doc.getCursor());
+        closeDialog('snippetsDialog');
+        showToast('✂️ Сниппет вставлен');
+    }
+    
+    const cdnLinks = {
+        beercss: '<link href="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.css" rel="stylesheet">\n<script type="module" src="https://cdn.jsdelivr.net/npm/beercss@3.8.4/dist/cdn/beer.min.js"><\/script>',
+        bootstrap: '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">\n<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"><\/script>',
+        tailwind: '<script src="https://cdn.tailwindcss.com"><\/script>',
+        jquery: '<script src="https://code.jquery.com/jquery-3.7.1.min.js"><\/script>',
+        vue: '<script src="https://unpkg.com/vue@3/dist/vue.global.js"><\/script>',
+        react: '<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"><\/script>\n<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"><\/script>',
+        axios: '<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"><\/script>',
+        lodash: '<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"><\/script>'
+    };
+    
+    function addCDN() {
+        const selected = document.getElementById('cdnSelect').value;
+        const code = editor.getValue();
+        editor.setValue(code.replace('</head>', cdnLinks[selected] + '\n</head>'));
+        saveCurrentFile();
+        closeDialog('cdnDialog');
+        showToast('🔗 CDN добавлен');
+    }
+    
+    function saveVersion() {
+        const content = editor.getValue();
+        if (!content.trim()) return;
+        versionHistory.unshift({ timestamp: Date.now(), content, fileName: files[currentFileIndex].name });
+        if (versionHistory.length > 20) versionHistory.pop();
+        localStorage.setItem('auraHtml_versions', JSON.stringify(versionHistory));
+    }
+    
+    function loadVersions() {
+        const saved = localStorage.getItem('auraHtml_versions');
+        if (saved) versionHistory = JSON.parse(saved);
+    }
+    
+    function showHistory() {
+        loadVersions();
+        const list = document.getElementById('versionList');
+        if (versionHistory.length === 0) {
+            list.innerHTML = '<p style="font-size: 0.8rem; text-align: center;">Пусто</p>';
+            return;
+        }
+        list.innerHTML = versionHistory.map((v, i) => `
+            <div class="version-item" onclick="restoreVersion(${i})">
+                <div style="font-weight: 600;">${v.fileName}</div>
+                <div style="font-size: 0.7rem; opacity: 0.7;">${new Date(v.timestamp).toLocaleString('ru-RU')}</div>
+            </div>
+        `).join('');
+    }
+    
+    function restoreVersion(index) {
+        if (confirm('Восстановить?')) {
+            editor.setValue(versionHistory[index].content);
+            saveCurrentFile();
+            closeDialog('historyDialog');
+            showToast('🕐 Восстановлено');
+        }
+    }
+    
+    function showDiff() {
+        const v1 = parseInt(document.getElementById('diffVersion1').value);
+        const v2 = parseInt(document.getElementById('diffVersion2').value);
+        if (isNaN(v1) || isNaN(v2)) { showToast('Выберите версии'); return; }
+        
+        const diff = Diff.createTwoFilesPatch(
+            versionHistory[v1].fileName, versionHistory[v2].fileName,
+            versionHistory[v1].content, versionHistory[v2].content
+        );
+        
+        const targetElement = document.getElementById('diffOutput');
+        targetElement.innerHTML = '';
+        new Diff2HtmlUI(targetElement, diff, { drawFileList: false, outputFormat: 'side-by-side' }).draw();
+    }
+    
+    function updateDiffSelects() {
+        loadVersions();
+        ['diffVersion1', 'diffVersion2'].forEach(id => {
+            document.getElementById(id).innerHTML = versionHistory.map((v, i) => 
+                `<option value="${i}">${v.fileName} - ${new Date(v.timestamp).toLocaleString('ru-RU')}</option>`
+            ).join('');
+        });
+    }
+    
+    function toggleSplitView() {
+        document.getElementById('splitContainer').classList.toggle('active');
+        if (document.getElementById('splitContainer').classList.contains('active')) updateSplitPreview();
+    }
+    
+    function updateSplitPreview() {
+        const iframe = document.getElementById('splitPreviewFrame');
+        const blob = new Blob([editor.getValue()], { type: 'text/html;charset=utf-8' });
+        iframe.src = URL.createObjectURL(blob);
+    }
+    
+    function toggleConsole() { document.getElementById('consoleContainer').classList.toggle('active'); }
+    function clearConsole() { document.getElementById('consoleOutput').innerHTML = ''; }
+    
+    // AI с подсветкой синтаксиса
+    function parseAIResponse(text) {
+        const parts = [];
+        const regex = /```(\w+)?\n?([\s\S]*?)```/g;
+        let lastIndex = 0;
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push({ type: 'text', content: text.substring(lastIndex, match.index) });
+            }
+            parts.push({ type: 'code', language: match[1] || 'html', content: match[2].trim() });
+            lastIndex = regex.lastIndex;
+        }
+        
+        if (lastIndex < text.length) {
+            parts.push({ type: 'text', content: text.substring(lastIndex) });
+        }
+        
+        return parts;
+    }
+    
+    function formatAIText(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/`([^`]+)`/g, '<code>$1</code>')
+            .replace(/\n/g, '<br>');
+    }
+    
+    function createCodeCard(code, language, index) {
+        const cardId = 'code-card-' + Date.now() + '-' + index;
+        const highlightedCode = Prism.highlight(code, Prism.languages[language] || Prism.languages.html, language);
+        
+        return `
+            <div class="ai-code-card">
+                <div class="ai-code-header">
+                    <span>💻 ${language.toUpperCase()}</span>
+                    <div class="ai-code-buttons">
+                        <button class="ai-code-btn" onclick="copyAICode('${cardId}')">📋 Копировать</button>
+                        <button class="ai-code-btn replace" onclick="replaceWithAICode('${cardId}')">⚡ В редактор</button>
+                    </div>
+                </div>
+                <pre class="ai-code-content"><code class="language-${language}" id="${cardId}">${highlightedCode}</code></pre>
+            </div>
+        `;
+    }
+    
+    function renderAIMessage(text) {
+        const parts = parseAIResponse(text);
+        let html = '';
+        
+        parts.forEach((part, i) => {
+            if (part.type === 'text') {
+                html += `<div class="ai-text-block">${formatAIText(part.content)}</div>`;
+            } else {
+                html += createCodeCard(part.content, part.language, i);
+            }
+        });
+        
+        return html;
+    }
+    
+    async function sendAIMessage() {
+        const input = document.getElementById('aiInput');
+        const message = input.value.trim();
+        if (!message) return;
+    
+        const messagesContainer = document.getElementById('aiMessages');
+        
+        const userMsg = document.createElement('div');
+        userMsg.className = 'ai-message user';
+        userMsg.textContent = message;
+        messagesContainer.appendChild(userMsg);
+        
+        input.value = '';
+        
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'ai-message ai';
+        loadingMsg.innerHTML = '⏳ Думаю...';
+        messagesContainer.appendChild(loadingMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+        const currentCode = editor.getValue();
+    
+        try {
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.href,
+                    'X-Title': 'auraHtml'
+                },
+                body: JSON.stringify({
+                    model: AI_MODEL,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `Ты помощник веб-разработчика. Отвечай на русском. 
+                            ВАЖНО: Если пишешь код, оборачивай в \`\`\`html код \`\`\` с указанием языка.
+                            Текущий код:\n${currentCode}`
+                        },
+                        { role: 'user', content: message }
+                    ]
+                })
+            });
+    
+            const data = await response.json();
+            loadingMsg.remove();
+            
+            const aiMsg = document.createElement('div');
+            aiMsg.className = 'ai-message ai';
+            
+            if (data.choices && data.choices[0]) {
+                aiMsg.innerHTML = renderAIMessage(data.choices[0].message.content);
+                // Сохраняем в историю
+                aiHistory.push({ role: 'user', content: message });
+                aiHistory.push({ role: 'assistant', content: data.choices[0].message.content });
+            } else {
+                aiMsg.innerHTML = '❌ Ошибка ответа';
+            }
+            
+            messagesContainer.appendChild(aiMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+        } catch (error) {
+            loadingMsg.remove();
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'ai-message ai';
+            errorMsg.innerHTML = '❌ Ошибка: ' + error.message;
+            messagesContainer.appendChild(errorMsg);
+        }
+    }
+    
+    function copyAICode(cardId) {
+        const codeElement = document.getElementById(cardId);
+        const code = codeElement.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('📋 Код скопирован');
+        });
+    }
+    
+    function replaceWithAICode(cardId) {
+        const codeElement = document.getElementById(cardId);
+        const code = codeElement.textContent;
+        if (confirm('Заменить весь текущий код?')) {
+            editor.setValue(code);
+            saveCurrentFile();
+            showToast(' Код заменен');
+        }
+    }
+    
+    function insertAIQuickPrompt(text) {
+        document.getElementById('aiInput').value = text;
+        document.getElementById('aiInput').focus();
+    }
+    
+    function toggleAIChat() {
+        document.getElementById('aiChatContainer').classList.toggle('active');
+    }
+    
+    function toggleFullscreen() {
+        document.body.classList.toggle('fullscreen-mode');
+        editor.refresh();
+    }
+    
+    function openPreview() {
+        const code = editor.getValue();
+        if (!code.trim()) { showToast('Нет кода'); return; }
+        const iframe = document.getElementById('previewFrame');
+        const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+        iframe.src = URL.createObjectURL(blob);
+        document.getElementById('previewOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closePreview() {
+        const iframe = document.getElementById('previewFrame');
+        if (iframe.src.startsWith('blob:')) URL.revokeObjectURL(iframe.src);
+        iframe.src = 'about:blank';
+        document.getElementById('previewOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    function setDevice(w, h, btn) {
+        const iframe = document.getElementById('previewFrame');
+        iframe.style.width = w; iframe.style.height = h;
+        document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    
+    async function screenshotPreview() {
+        const code = editor.getValue();
+        if (!code.trim()) { showToast('Нет кода'); return; }
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;left:-9999px;width:1200px;height:800px;';
+        document.body.appendChild(iframe);
+        const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+        iframe.src = URL.createObjectURL(blob);
+        iframe.onload = async () => {
+            try {
+                const canvas = await html2canvas(iframe.contentDocument.body, { width: 1200, height: 800 });
+                canvas.toBlob((b) => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(b);
+                    a.download = 'screenshot.png';
+                    a.click();
+                    showToast('📸 Скриншот');
+                });
+            } catch (e) { showToast('❌ Ошибка'); }
+            document.body.removeChild(iframe);
+        };
+    }
+    
+    async function exportPDF() {
+        const code = editor.getValue();
+        if (!code.trim()) { showToast('Нет кода'); return; }
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;left:-9999px;width:1200px;height:800px;';
+        document.body.appendChild(iframe);
+        const blob = new Blob([code], { type: 'text/html;charset=utf-8' });
+        iframe.src = URL.createObjectURL(blob);
+        iframe.onload = async () => {
+            try {
+                const canvas = await html2canvas(iframe.contentDocument.body);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
+                pdf.save('export.pdf');
+                showToast('📕 PDF создан');
+            } catch (e) { showToast('❌ Ошибка'); }
+            document.body.removeChild(iframe);
+        };
+        closeDialog('exportDialog');
+    }
+    
+    function validateCode() {
+        const code = editor.getValue();
+        const errors = [];
+        if (!code.toLowerCase().includes('<!doctype html>')) errors.push('⚠️ Нет DOCTYPE');
+        const openTags = (code.match(/<([a-z][a-z0-9]*)\b[^>]*>/gi) || []);
+        const closeTags = (code.match(/<\/([a-z][a-z0-9]*)>/gi) || []);
+        const counts = {};
+        openTags.forEach(t => { const m = t.match(/<([a-z]+)/i); if (m && !['br','hr','img','input','meta','link'].includes(m[1])) counts[m[1]] = (counts[m[1]]||0)+1; });
+        closeTags.forEach(t => { const m = t.match(/<\/([a-z]+)/i); if (m) counts[m[1]] = (counts[m[1]]||0)-1; });
+        Object.entries(counts).forEach(([tag, c]) => { if (c !== 0) errors.push(`⚠️ <${tag}>: ${c > 0 ? 'не закрыт' : 'лишний'}`); });
+        
+        const out = document.getElementById('validationOutput');
+        out.innerHTML = errors.length === 0 
+            ? '<div style="color:#4caf50;">✅ Всё ок!</div>'
+            : errors.map(e => `<div>${e}</div>`).join('');
+    }
+    
+    function updateFontSize(v) {
+        document.getElementById('fontSizeValue').textContent = v;
+        document.querySelector('.CodeMirror').style.fontSize = v + 'px';
+        localStorage.setItem('auraHtml_fontSize', v);
+    }
+    
+    function saveToStorage() {
+        localStorage.setItem('auraHtml_data', JSON.stringify({
+            files, currentFileIndex,
+            settings: {
+                fontSize: document.getElementById('fontSizeInput').value,
+                autosaveInterval: document.getElementById('autosaveInterval').value,
+                autosave: document.getElementById('autosaveToggle').checked,
+                liveReload: document.getElementById('liveReloadToggle').checked,
+                minimap: document.getElementById('minimapToggle').checked
+            }
+        }));
+    }
+    
+    function loadFromStorage() {
+        const s = localStorage.getItem('auraHtml_data');
+        if (s) {
+            const d = JSON.parse(s);
+            files = d.files || files;
+            currentFileIndex = d.currentFileIndex || 0;
+            editor.setValue(files[currentFileIndex].content);
+            updateTabsUI();
+            if (d.settings) {
+                document.getElementById('fontSizeInput').value = d.settings.fontSize || 13;
+                document.getElementById('autosaveToggle').checked = d.settings.autosave !== false;
+                document.getElementById('liveReloadToggle').checked = d.settings.liveReload !== false;
+                if (d.settings.minimap) document.getElementById('minimap').style.display = 'block';
+                updateFontSize(d.settings.fontSize || 13);
+            }
+        }
+    }
+    
+    function startIntervals() {
+        if (autosaveInterval) clearInterval(autosaveInterval);
+        autosaveInterval = setInterval(() => {
+            if (document.getElementById('autosaveToggle').checked) saveCurrentFile();
+        }, (parseInt(document.getElementById('autosaveInterval').value) || 5) * 60000);
+    }
+    
+    function openDialog(id) {
+        if (id === 'historyDialog') showHistory();
+        if (id === 'diffDialog') updateDiffSelects();
+        document.getElementById(id).showModal();
+    }
+    
+    function closeDialog(id) { document.getElementById(id).close(); }
+    
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'slideUp 0.3s ease reverse';
+            setTimeout(() => document.body.removeChild(t), 300);
+        }, 2500);
+    }
+    
+    function handleKeyboardShortcuts(e) {
+        if (e.key === 'Escape') {
+            closePreview();
+            document.querySelectorAll('dialog').forEach(d => d.close());
+        }
+    }
+  </script>
+
+</body>
+
+</html>
